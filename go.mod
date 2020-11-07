@@ -3,7 +3,7 @@ module github.com/Depado/fox
 go 1.15
 
 require (
-	github.com/Depado/soundcloud v0.0.0
+	github.com/Depado/soundcloud v0.1.0
 	github.com/bwmarrin/discordgo v0.22.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/hako/durafmt v0.0.0-20200710122514-c0fb7b4da026
@@ -22,7 +22,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
-	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
+	golang.org/x/sys v0.0.0-20201107080550-4d91cf3a1aaf // indirect
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/tools v0.0.0-20201105001634-bc3cf281b174 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
@@ -30,4 +30,4 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
 
-replace github.com/Depado/soundcloud v0.0.0 => ../soundcloud
+// replace github.com/Depado/soundcloud v0.1.0 => ../soundcloud

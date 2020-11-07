@@ -10,10 +10,7 @@ import (
 	"github.com/hako/durafmt"
 )
 
-func (b *BotInstance) SendNowPlaying(t soundcloud.Track) {
-	b.Player.tracksM.Lock()
-	defer b.Player.tracksM.Unlock()
-
+func (b *BotInstance) TrackEmbed(t soundcloud.Track, queue bool) *discordgo.MessageEmbed {
 	e := &discordgo.MessageEmbed{
 		Title: t.Title,
 		URL:   t.PermalinkURL,
@@ -31,12 +28,23 @@ func (b *BotInstance) SendNowPlaying(t soundcloud.Track) {
 			{Name: "Reposts", Value: strconv.Itoa(t.RepostsCount), Inline: true},
 			{Name: "Duration", Value: durafmt.Parse(time.Duration(t.Duration) * time.Millisecond).LimitFirstN(2).String(), Inline: true},
 		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: fmt.Sprintf("%d tracks left in queue", len(b.Player.tracks)),
-		},
 	}
 
-	_, err := b.Session.ChannelMessageSendEmbed(b.conf.Bot.Channels.Public, e)
+	if queue {
+		e.Footer = &discordgo.MessageEmbedFooter{
+			Text: fmt.Sprintf(
+				"%d tracks left in queue - %s",
+				b.Player.QueueSize(), b.Player.QueueDurationString(),
+			),
+		}
+	}
+	return e
+}
+
+// SendNowPlaying will send an embed in the public channel displaying the
+// details of the track being currently played
+func (b *BotInstance) SendNowPlaying(t soundcloud.Track) {
+	_, err := b.Session.ChannelMessageSendEmbed(b.conf.Bot.Channels.Public, b.TrackEmbed(t, true))
 	if err != nil {
 		b.log.Err(err).Msg("unable to send embed")
 	}

@@ -3,21 +3,50 @@ package bot
 import (
 	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/Depado/soundcloud"
+	"github.com/hako/durafmt"
 	"github.com/jonas747/dca"
 )
 
 type Player struct {
 	tracks  soundcloud.Tracks
 	tracksM sync.RWMutex
+
 	audioM  sync.RWMutex
 	stream  *dca.StreamingSession
 	session *dca.EncodeSession
+
 	playing bool
 	stop    bool
 	pause   bool
-	// loop    bool
+}
+
+// QueueDuration will return the total duration of the active queue
+// This will effectively lock the tracks mutex until done
+func (p *Player) QueueDuration() int {
+	p.tracksM.Lock()
+	defer p.tracksM.Unlock()
+
+	var tot int
+	for _, t := range p.tracks {
+		tot += t.Duration
+	}
+	return tot
+}
+
+// QueueDurationString will return the total duration of the active queue in
+// human readable format
+func (p *Player) QueueDurationString() string {
+	return durafmt.Parse(time.Duration(p.QueueDuration()) * time.Millisecond).LimitFirstN(2).String()
+}
+
+// QueueSize will return the current number of tracks in queue
+func (p *Player) QueueSize() int {
+	p.tracksM.Lock()
+	defer p.tracksM.Unlock()
+	return len(p.tracks)
 }
 
 func (p *Player) Next(tr ...soundcloud.Track) {

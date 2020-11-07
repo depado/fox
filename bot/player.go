@@ -47,11 +47,8 @@ func (b *BotInstance) PlayQueue() {
 			b.Player.stop = false
 			b.SendNowPlaying(*t)
 			b.Session.UpdateStatus(0, fmt.Sprintf("%s - %s", t.Title, t.User.Username)) // nolint:errcheck
-			if err := b.Play(url); err != nil && errors.Is(err, dca.ErrVoiceConnClosed) {
-				if err := b.SalvageVoice(); err != nil {
-					b.SendControlMessage("Voice connection lost", "I tried fixing it by myself but it didn't work.")
-					return
-				}
+			if err := b.Play(url); err != nil {
+				b.log.Err(err).Msg("unable to play")
 				continue
 			}
 			b.Player.Pop()
@@ -63,12 +60,11 @@ func (b *BotInstance) PlayQueue() {
 }
 
 func (b *BotInstance) Play(url string) error {
-	err := b.Voice.Speaking(true)
-	if err != nil {
-		b.log.Err(err).Msg("Failed setting speaking")
-		return err
+	if err := b.Voice.Speaking(true); err != nil {
+		return fmt.Errorf("failed setting voice to speaking: %w", err)
 	}
 	defer b.Voice.Speaking(false) // nolint:errcheck
+	b.log.Debug().Msg("voice setup done")
 
 	opts := dca.StdEncodeOptions
 	opts.RawOutput = true
@@ -76,10 +72,11 @@ func (b *BotInstance) Play(url string) error {
 
 	encodeSession, err := dca.EncodeFile(url, opts)
 	if err != nil {
-		b.log.Err(err).Msg("failed creating an encoding session")
+		return fmt.Errorf("failed creating the encoding session: %w", err)
 	}
 	defer encodeSession.Cleanup()
 	b.Player.session = encodeSession
+	b.log.Debug().Msg("encoding session setup")
 
 	done := make(chan error)
 	stream := dca.NewStream(encodeSession, b.Voice, done)
@@ -102,7 +99,7 @@ func (b *BotInstance) Play(url string) error {
 				b.Player.stream = stream
 				continue
 			}
-			return err
+			return fmt.Errorf("reading stream: %w", err)
 		}
 	}
 }

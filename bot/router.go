@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -60,4 +61,8 @@ func (b *BotInstance) MessageCreated(s *discordgo.Session, m *discordgo.MessageC
 	case "vote":
 		b.VoteHandler(m)
 	}
+
+	b.DisplayTemporaryMessage(m, "", "Unrecognized command",
+		fmt.Sprintf(`Tip: Use "%s help" for a list of commands`, b.conf.Bot.Prefix))
+	b.DeleteUserMessage(m)
 }

@@ -11,6 +11,7 @@ import (
 // AddHandler is in charge of pushing a track or playlist to the end of the
 // current queue
 func (b *BotInstance) AddHandler(m *discordgo.MessageCreate, args []string) {
+	defer b.DeleteUserMessage(m)
 	if len(args) < 1 {
 		b.SendNotice("", fmt.Sprintf("Usage: `%s <add|a> <soundcloud URL>`", b.conf.Bot.Prefix), "", m.ChannelID)
 		return
@@ -24,14 +25,12 @@ func (b *BotInstance) AddHandler(m *discordgo.MessageCreate, args []string) {
 	}
 
 	b.AddToQueue(m, url, false)
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
 }
 
 // NextHandler is in charge of pushing a track or playlist in front of the rest
 // of the queue
 func (b *BotInstance) NextHandler(m *discordgo.MessageCreate, args []string) {
+	defer b.DeleteUserMessage(m)
 	if len(args) < 1 {
 		b.SendNotice("", fmt.Sprintf("Usage: `%s <next|n> <soundcloud URL>`", b.conf.Bot.Prefix), "", m.ChannelID)
 		return
@@ -45,13 +44,11 @@ func (b *BotInstance) NextHandler(m *discordgo.MessageCreate, args []string) {
 	}
 
 	b.AddToQueue(m, url, true)
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
 }
 
 // HelpHandler will handle incoming requests for help
 func (b *BotInstance) HelpHandler(m *discordgo.MessageCreate) {
+	defer b.DeleteUserMessage(m)
 	var doc = &discordgo.MessageEmbed{
 		Title: "Fox Help",
 		Color: 0xff5500,
@@ -70,35 +67,31 @@ func (b *BotInstance) HelpHandler(m *discordgo.MessageCreate) {
 	if err != nil {
 		log.Err(err).Msg("unable to send embed")
 	}
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
 }
 
 // QueueHandler is in charge of dealing with queue commands such as displaying
 // the current queue, shuffling the queue or in the control channel, clearing it
 func (b *BotInstance) QueueHandler(m *discordgo.MessageCreate, args []string) {
+	defer b.DeleteUserMessage(m)
+
 	if len(args) == 0 {
 		b.DisplayQueue(m)
-		if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
 		return
 	}
+
 	switch args[0] {
 	case "shuffle":
 		b.Player.Shuffle()
 		b.SendNamedNotice(m, "Requested by", "🎲 Shuffle!", fmt.Sprintf("I shuffled %d tracks for you.", len(b.Player.tracks)), "")
-		if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
 	case "clear": // The clear command is not public and shouldn't be used
 		if b.restricted(m) {
 			b.Player.Clear()
 			b.SendNamedNotice(m, "Requested by", "🚮 Clear", "The queue has been reset", "")
-			if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-				b.log.Err(err).Msg("unable to delete user message")
-			}
+		} else {
+			b.DisplayTemporaryMessage(m, "", "Permission denied", "Tip: Only admins and DJs can do that")
 		}
+	default:
+		b.DisplayTemporaryMessage(m, "", "Unrecognized command",
+			fmt.Sprintf(`Tip: Use "%s help" for a list of commands`, b.conf.Bot.Prefix))
 	}
 }
