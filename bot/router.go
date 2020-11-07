@@ -1,164 +1,63 @@
 package bot
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/rs/zerolog/log"
 )
 
+// ack tells whether or not the bot should react to a message
+// Basically it checks whether the command was issued in the public or control
+// channel, if the message contains the defined prefix, and if it didn't react
+// to its own message
 func (b *BotInstance) ack(s *discordgo.Session, m *discordgo.MessageCreate) bool {
 	return strings.HasPrefix(m.Content, b.conf.Bot.Prefix) &&
 		(m.ChannelID == b.conf.Bot.Channels.Public || m.ChannelID == b.conf.Bot.Channels.Control) &&
 		m.Author.ID != s.State.User.ID
 }
 
+// restricted will return true if the message was posted in the control channel
+func (b *BotInstance) restricted(m *discordgo.MessageCreate) bool {
+	return m.ChannelID == b.conf.Bot.Channels.Control
+}
+
+// MessageCreated is the main handler and will act as a router for all the
+// commands
 func (b *BotInstance) MessageCreated(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !b.ack(s, m) {
 		return
 	}
 
 	fields := strings.Fields(m.Content)
-
 	if len(fields) < 2 {
-		if _, err := s.ChannelMessageSend(m.ChannelID, "TODO:usage"); err != nil {
-			log.Err(err).Msg("unable to send usage message")
-		}
-		return
+		b.HelpHandler(m)
 	}
+	args := fields[2:]
 
 	switch fields[1] {
+	case "next", "n":
+		b.NextHandler(m, args)
+	case "help", "h":
+		b.HelpHandler(m)
 	case "join", "j":
 		b.JoinHandler(m)
 	case "leave", "l":
 		b.LeaveHandler(m)
 	case "queue", "q":
-		b.QueueHandler(m, fields[2:])
+		b.QueueHandler(m, args)
 	case "add", "a":
-		b.AddHandler(m, fields[2:])
-	case "shuffle", "s":
-		b.ShuffleHandler(m)
+		b.AddHandler(m, args)
 	case "pause":
-		b.PauseHandler()
+		b.PauseHandler(m)
 	case "play":
-		b.PlayHandler()
+		b.PlayHandler(m)
 	case "skip":
 		b.SkipHandler(m)
 	case "resume":
-		b.ResumeHandler()
+		b.ResumeHandler(m)
 	case "stop":
-		b.StopHandler()
-	case "info", "i":
-		b.InfoHandler(m, fields[2:])
-	}
-}
-
-func (b *BotInstance) ShuffleHandler(m *discordgo.MessageCreate) {
-	b.Player.Shuffle()
-	b.SendNamedNotice(m, "Requested by", "🎲 Shuffle!", fmt.Sprintf("I shuffled %d tracks for you.", len(b.Player.tracks)), "")
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
-}
-
-func (b *BotInstance) AddHandler(m *discordgo.MessageCreate, args []string) {
-	if len(args) < 1 {
-		b.SendNotice("", fmt.Sprintf("Usage: `%s <add|a> <soundcloud URL>`", b.conf.Bot.Prefix), "", m.ChannelID)
-		return
-	}
-
-	url := args[0]
-	url = strings.Trim(url, "<>")
-	if !strings.HasPrefix(url, "https://soundcloud.com") {
-		b.SendNotice("", "This doesn't look like a SoundCloud URL", "", m.ChannelID)
-		return
-	}
-
-	b.AddToQueue(m, url)
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
-}
-
-func (b *BotInstance) QueueHandler(m *discordgo.MessageCreate, args []string) {
-	b.DisplayQueue(m)
-	if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-		b.log.Err(err).Msg("unable to delete user message")
-	}
-}
-
-func (b *BotInstance) PlayHandler() {
-	b.PlayQueue()
-}
-
-func (b *BotInstance) PauseHandler() {
-	if b.Player.playing {
-		b.Player.stream.SetPaused(true)
-	}
-}
-
-func (b *BotInstance) ResumeHandler() {
-	if b.Player.playing {
-		b.Player.stream.SetPaused(false)
-	}
-}
-
-func (b *BotInstance) StopHandler() {
-	if b.Player.playing {
-		b.Player.session.Stop() // nolint:errcheck
-		b.Player.stop = true
-	}
-}
-
-func (b *BotInstance) SkipHandler(m *discordgo.MessageCreate) {
-	if b.Player.playing {
-		b.Player.session.Stop() // nolint:errcheck
-		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The currently playing track has been skipped", "Note: This can take a few seconds")
-		b.Session.ChannelMessageDelete(m.ChannelID, m.ID)
-	} else {
-		b.Player.Pop()
-		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The next track in queue has been skipped", "")
-		b.Session.ChannelMessageDelete(m.ChannelID, m.ID)
-	}
-}
-
-func (b *BotInstance) InfoHandler(m *discordgo.MessageCreate, args []string) {
-	if len(args) < 1 {
-		//TODO:Print usage
-	}
-	url := args[0]
-	url = strings.Trim(url, "<>")
-	if !strings.HasPrefix(url, "https://soundcloud.com") {
-		if _, err := b.Session.ChannelMessageSend(m.ChannelID, "This doesn't look like a Soundcloud URL"); err != nil {
-			log.Err(err).Msg("unable to send usage message")
-		}
-		return
-	}
-	b.handleURL(b.Session, m, url)
-}
-
-func (b *BotInstance) JoinHandler(m *discordgo.MessageCreate) {
-	b.log.Debug().Str("user", m.Author.Username).Str("method", "join").Msg("called")
-	if b.Voice == nil {
-		voice, err := b.Session.ChannelVoiceJoin(b.conf.Bot.Guild, b.conf.Bot.Channels.Voice, false, true)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to initiate voice connection")
-		}
-		b.Voice = voice
-		b.log.Debug().Str("user", m.Author.Username).Str("method", "join").Msg("bot joined vocal channel")
-	}
-}
-
-func (b *BotInstance) LeaveHandler(m *discordgo.MessageCreate) {
-	b.log.Debug().Str("user", m.Author.Username).Str("method", "leave").Msg("called")
-	if b.Voice != nil {
-		if err := b.Voice.Disconnect(); err != nil {
-			b.log.Error().Err(err).Msg("unable to disconnect from voice channel")
-			return
-		}
-		b.Voice = nil
-		b.log.Debug().Str("user", m.Author.Username).Str("method", "leave").Msg("bot left vocal channel")
-		return
+		b.StopHandler(m)
+	case "vote":
+		b.VoteHandler(m)
 	}
 }

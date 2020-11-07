@@ -7,7 +7,6 @@ import (
 
 	"github.com/Depado/soundcloud"
 	"github.com/jonas747/dca"
-	"github.com/rs/zerolog/log"
 )
 
 func (b *BotInstance) PlayQueue() {
@@ -23,6 +22,7 @@ func (b *BotInstance) PlayQueue() {
 		}()
 		b.log.Debug().Int("length", len(b.Player.tracks)).Msg("starting playing queue")
 		for {
+			b.Vote.Reset()
 			if len(b.Player.tracks) == 0 {
 				b.log.Debug().Int("length", len(b.Player.tracks)).Msg("track length")
 				b.SendPublicMessage("Nothing left to play!", fmt.Sprintf("You can give me more by using the %s command!", b.conf.Bot.Prefix))
@@ -65,7 +65,7 @@ func (b *BotInstance) PlayQueue() {
 func (b *BotInstance) Play(url string) error {
 	err := b.Voice.Speaking(true)
 	if err != nil {
-		log.Err(err).Msg("Failed setting speaking")
+		b.log.Err(err).Msg("Failed setting speaking")
 		return err
 	}
 	defer b.Voice.Speaking(false) // nolint:errcheck
@@ -76,8 +76,9 @@ func (b *BotInstance) Play(url string) error {
 
 	encodeSession, err := dca.EncodeFile(url, opts)
 	if err != nil {
-		log.Err(err).Msg("failed creating an encoding session")
+		b.log.Err(err).Msg("failed creating an encoding session")
 	}
+	defer encodeSession.Cleanup()
 	b.Player.session = encodeSession
 
 	done := make(chan error)
@@ -87,12 +88,20 @@ func (b *BotInstance) Play(url string) error {
 	for { // nolint:gosimple
 		select {
 		case err := <-done:
-			if err != nil && err != io.EOF {
-				log.Err(err).Msg("error occured during playback")
-			} else {
-				err = nil
+			if err != nil && err == io.EOF {
+				return nil
 			}
-			encodeSession.Cleanup()
+			if errors.Is(err, dca.ErrVoiceConnClosed) {
+				b.log.Info().Err(err).Msg("voice connection closed, attempting reconnection")
+				if err = b.SalvageVoice(); err != nil {
+					b.log.Err(err).Msg("unable to reconnect voice")
+					return err
+				}
+				b.log.Info().Msg("voice reconnected, recreating stream")
+				stream = dca.NewStream(encodeSession, b.Voice, done)
+				b.Player.stream = stream
+				continue
+			}
 			return err
 		}
 	}

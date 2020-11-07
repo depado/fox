@@ -20,6 +20,7 @@ type BotInstance struct {
 	Soundcloud *soundcloud.Client
 	Voice      *discordgo.VoiceConnection
 	Player     *Player
+	Vote       *VoteHolder
 }
 
 func NewBotInstance(lc fx.Lifecycle, c *cmd.Conf, log *zerolog.Logger, sc *soundcloud.Client) *BotInstance {
@@ -45,6 +46,7 @@ func NewBotInstance(lc fx.Lifecycle, c *cmd.Conf, log *zerolog.Logger, sc *sound
 		Session:    dg,
 		Voice:      voice,
 		Player:     &Player{tracks: soundcloud.Tracks{}},
+		Vote:       &VoteHolder{Voters: make(map[string]bool)},
 	}
 	b.Session.AddHandler(b.MessageCreated)
 
@@ -56,7 +58,9 @@ func NewBotInstance(lc fx.Lifecycle, c *cmd.Conf, log *zerolog.Logger, sc *sound
 				b.Player.session.Stop() // nolint:errcheck
 				b.Player.session.Cleanup()
 			}
-			b.Voice.Close()
+			if b.Voice != nil {
+				b.Voice.Close()
+			}
 			b.Session.Close()
 			return nil
 		},
