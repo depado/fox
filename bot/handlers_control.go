@@ -66,15 +66,9 @@ func (b *BotInstance) SkipHandler(m *discordgo.MessageCreate) {
 	if b.Player.playing {
 		b.Player.session.Stop() // nolint:errcheck
 		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The currently playing track has been skipped", "Note: This can take a few seconds")
-		if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
 	} else {
 		b.Player.Pop()
 		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The next track in queue has been skipped", "")
-		if err := b.Session.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
 	}
 }
 
