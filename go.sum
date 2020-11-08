@@ -15,6 +15,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Depado/soundcloud v0.1.0 h1:gGx5hq90N05Hr1S++mxHsx4dJifqKki5EhIKuJX8e90=
 github.com/Depado/soundcloud v0.1.0/go.mod h1:I1Woxhnr/3k0taYYkALq6iX1omE95eF9831CYZbz5Ic=
+github.com/Depado/soundcloud v0.1.1 h1:ZBzupSIVX2Cu8q810jvZG8Lz31vubrfoL/CesCm3XgQ=
+github.com/Depado/soundcloud v0.1.1/go.mod h1:I1Woxhnr/3k0taYYkALq6iX1omE95eF9831CYZbz5Ic=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

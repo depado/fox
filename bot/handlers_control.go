@@ -104,6 +104,7 @@ func (b *BotInstance) JoinHandler(m *discordgo.MessageCreate) {
 			return
 		}
 		b.Voice = voice
+		b.SendNotice("", fmt.Sprintf("➡️ Joined voice channel as instructed by <@%s>", m.Author.ID), "", m.ChannelID)
 		b.log.Debug().Str("user", m.Author.Username).Str("method", "join").Msg("bot joined vocal channel")
 	}
 }
@@ -128,6 +129,7 @@ func (b *BotInstance) LeaveHandler(m *discordgo.MessageCreate) {
 		}
 		b.Voice = nil
 		b.log.Debug().Str("user", m.Author.Username).Str("method", "leave").Msg("bot left vocal channel")
+		b.SendNotice("", fmt.Sprintf("⬅️ Left voice channel as instructed by <@%s>", m.Author.ID), "", m.ChannelID)
 		return
 	}
 }

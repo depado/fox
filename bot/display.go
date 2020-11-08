@@ -30,6 +30,14 @@ func (b *BotInstance) TrackEmbed(t soundcloud.Track, queue bool) *discordgo.Mess
 		},
 	}
 
+	if t.Playlist != nil {
+		e.Fields = append(e.Fields, &discordgo.MessageEmbedField{
+			Name:   "In Playlist",
+			Value:  fmt.Sprintf("[%s](%s) by [%s](%s)", t.Playlist.Title, t.Playlist.PermalinkURL, t.Playlist.User.Username, t.Playlist.User.PermalinkURL),
+			Inline: false,
+		})
+	}
+
 	if queue {
 		e.Footer = &discordgo.MessageEmbedFooter{
 			Text: fmt.Sprintf(

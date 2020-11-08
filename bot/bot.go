@@ -82,10 +82,12 @@ func (b *BotInstance) SalvageVoice() error {
 		}
 	}
 
-	voice, err := b.Session.ChannelVoiceJoin(b.conf.Bot.Guild, b.conf.Bot.Channels.Voice, false, true)
-	if err != nil {
-		return fmt.Errorf("unable to establish connection to vocal channel: %w", err)
+	if b.Session != nil {
+		voice, err := b.Session.ChannelVoiceJoin(b.conf.Bot.Guild, b.conf.Bot.Channels.Voice, false, true)
+		if err != nil {
+			return fmt.Errorf("unable to establish connection to vocal channel: %w", err)
+		}
+		b.Voice = voice
 	}
-	b.Voice = voice
 	return nil
 }

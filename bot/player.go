@@ -18,7 +18,6 @@ func (b *BotInstance) PlayQueue() {
 		defer func() {
 			b.Player.audioM.Unlock()
 			b.Player.playing = false
-			b.Session.UpdateStatus(0, "") // nolint:errcheck
 		}()
 		for {
 			tracklen := b.Player.QueueSize()
@@ -29,6 +28,7 @@ func (b *BotInstance) PlayQueue() {
 				b.SendPublicMessage("Nothing left to play!", fmt.Sprintf("You can give me more by using the %s command!", b.conf.Bot.Prefix), "")
 				return
 			}
+
 			b.log.Debug().Msg("getting track")
 			t := b.Player.Get()
 			if t == nil {
@@ -36,6 +36,7 @@ func (b *BotInstance) PlayQueue() {
 				b.log.Error().Msg("queue isn't empty but a nil track was returned")
 				continue
 			}
+
 			b.log.Debug().Msg("track was found, fetching URL")
 			ts, _, _ := b.Soundcloud.Track().FromTrack(t, false)
 			url, err := ts.Stream(soundcloud.Opus)
@@ -47,10 +48,12 @@ func (b *BotInstance) PlayQueue() {
 					continue
 				}
 			}
+
 			b.Player.playing = true
 			b.Player.stop = false
 			b.SendNowPlaying(*t)
-			b.Session.UpdateStatus(0, fmt.Sprintf("%s - %s", t.Title, t.User.Username)) // nolint:errcheck
+			b.Session.UpdateListeningStatus(fmt.Sprintf("%s - %s", t.Title, t.User.Username)) // nolint:errcheck
+
 			if err := b.Play(url); err != nil {
 				b.log.Err(err).Msg("unable to play")
 				continue
@@ -64,6 +67,9 @@ func (b *BotInstance) PlayQueue() {
 }
 
 func (b *BotInstance) Play(url string) error {
+	if b.Voice == nil {
+		return fmt.Errorf("no voice connection found")
+	}
 	if err := b.Voice.Speaking(true); err != nil {
 		return fmt.Errorf("failed setting voice to speaking: %w", err)
 	}

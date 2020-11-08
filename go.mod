@@ -3,7 +3,7 @@ module github.com/Depado/fox
 go 1.15
 
 require (
-	github.com/Depado/soundcloud v0.1.0
+	github.com/Depado/soundcloud v0.1.1
 	github.com/bwmarrin/discordgo v0.22.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/hako/durafmt v0.0.0-20200710122514-c0fb7b4da026
