@@ -53,17 +53,29 @@ func (b *BotInstance) HelpHandler(m *discordgo.MessageCreate) {
 	var doc = &discordgo.MessageEmbed{
 		Title: "Fox Help",
 		Color: 0xff5500,
-		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Help", Value: fmt.Sprintf("%s <help|h>", b.conf.Bot.Prefix), Inline: true},
-			{Name: "Add tracks", Value: fmt.Sprintf("%s <add|a> <soundcloud url>", b.conf.Bot.Prefix), Inline: true},
-			{Name: "Add next tracks", Value: fmt.Sprintf("%s <next|n> <soundcloud url>", b.conf.Bot.Prefix)},
-			{Name: "Channel", Value: fmt.Sprintf("%s <join/leave>", b.conf.Bot.Prefix)},
-			{Name: "Display Queue", Value: fmt.Sprintf("%s <queue|q>", b.conf.Bot.Prefix), Inline: true},
-			{Name: "Shuffle Queue", Value: fmt.Sprintf("%s <queue|q> shuffle", b.conf.Bot.Prefix), Inline: true},
-			{Name: "Clear Queue", Value: fmt.Sprintf("%s <queue|q> clear", b.conf.Bot.Prefix), Inline: true},
-			{Name: "Control", Value: fmt.Sprintf("%s <play/pause/resume/stop>", b.conf.Bot.Prefix)},
-		},
+		Description: fmt.Sprintf("Prefix your commands with `%s`\n\n", b.conf.Bot.Prefix) +
+			"**Available commands:**\n" +
+			"· `help` - Display this help message\n" +
+			"· `add` or `a` - Add tracks to the end of queue\n" +
+			"· `next` or `n` - Add tracks to the start of queue\n" +
+			"· `queue` or `q` - Display the queue\n" +
+			"· `queue shuffle` - Shuffle the queue\n" +
+			"· `play/pause/resume` - Control the player\n" +
+			"· `vote` - Vote to skip the currently playing track\n\n" +
+			"For example, to add a new track to the playlist, you need to send\n" +
+			fmt.Sprintf("`%s add <soundcloud URL>`", b.conf.Bot.Prefix),
 	}
+
+	if b.restricted(m) {
+		doc.Fields = []*discordgo.MessageEmbedField{
+			{Name: "Channel", Value: fmt.Sprintf("%s <join/leave>", b.conf.Bot.Prefix)},
+			{Name: "Clear Queue", Value: fmt.Sprintf("%s <queue|q> clear", b.conf.Bot.Prefix), Inline: true},
+			{Name: "Control", Value: fmt.Sprintf("%s <stop>", b.conf.Bot.Prefix)},
+			{Name: "Skip", Value: fmt.Sprintf("%s <skip>", b.conf.Bot.Prefix)},
+			{Name: "Stats", Value: fmt.Sprintf("%s <stats>", b.conf.Bot.Prefix)},
+		}
+	}
+
 	_, err := b.Session.ChannelMessageSendEmbed(m.ChannelID, doc)
 	if err != nil {
 		log.Err(err).Msg("unable to send embed")
@@ -87,7 +99,7 @@ func (b *BotInstance) QueueHandler(m *discordgo.MessageCreate, args []string) {
 	case "clear": // The clear command is not public and shouldn't be used
 		if b.restricted(m) {
 			b.Player.Clear()
-			b.SendNotice("", fmt.Sprintf("🚮 The queue was reset for <@%s>", m.Author.ID), "", m.ChannelID)
+			b.SendNotice("", fmt.Sprintf("🚮 The queue was reset by <@%s>", m.Author.ID), "", m.ChannelID)
 		} else {
 			b.SendTimedNotice("", "You do not have this permission", "Tip: Only admins and DJs can do that", m.ChannelID, 10*time.Second)
 		}

@@ -27,7 +27,7 @@ func (b *BotInstance) PauseHandler(m *discordgo.MessageCreate) {
 	if !b.Player.pause {
 		b.Player.stream.SetPaused(true)
 		b.Player.pause = true
-		b.SendNotice("", fmt.Sprintf("⏸️ Paused by request of <@%s>", m.Author.ID), "", m.ChannelID)
+		b.SendNotice("", fmt.Sprintf("⏸️ Paused by <@%s>", m.Author.ID), "", m.ChannelID)
 	} else {
 		b.SendTimedNotice("", "⏸️ Pause: Nothing to do", "", m.ChannelID, 5*time.Second)
 	}
@@ -42,7 +42,7 @@ func (b *BotInstance) ResumeHandler(m *discordgo.MessageCreate) {
 	if b.Player.pause {
 		b.Player.stream.SetPaused(false)
 		b.Player.pause = false
-		b.SendNotice("", fmt.Sprintf("⏯️ Resumed by request of <@%s>", m.Author.ID), "", m.ChannelID)
+		b.SendNotice("", fmt.Sprintf("⏯️ Resumed by <@%s>", m.Author.ID), "", m.ChannelID)
 	} else {
 		m := b.SendNotice("", "▶️ Resume: Nothing to do", "", m.ChannelID)
 		b.DeleteAfter(m, 5*time.Second)
@@ -63,7 +63,7 @@ func (b *BotInstance) StopHandler(m *discordgo.MessageCreate) {
 
 	b.Player.session.Stop() // nolint:errcheck
 	b.Player.stop = true
-	b.SendNotice("", fmt.Sprintf("⏹️ Stopped for <@%s>", m.Author.ID), "", m.ChannelID)
+	b.SendNotice("", fmt.Sprintf("⏹️ Stopped by <@%s>", m.Author.ID), "", m.ChannelID)
 }
 
 func (b *BotInstance) SkipHandler(m *discordgo.MessageCreate) {
@@ -79,12 +79,12 @@ func (b *BotInstance) SkipHandler(m *discordgo.MessageCreate) {
 	if b.Player.playing {
 		b.Player.session.Stop() // nolint:errcheck
 		b.SendNotice(
-			"", fmt.Sprintf("⏭️ Skipped the currently playing track for <@%s>", m.Author.ID),
+			"", fmt.Sprintf("⏭️ <@%s> skipped the currently playing track", m.Author.ID),
 			"Note: This can take a few seconds", m.ChannelID,
 		)
 	} else {
 		b.Player.Pop()
-		b.SendNotice("", fmt.Sprintf("⏭️ Skipped the next track in queue <@%s>", m.Author.ID), "", m.ChannelID)
+		b.SendNotice("", fmt.Sprintf("⏭️ <@%s> skipped the next track in queue", m.Author.ID), "", m.ChannelID)
 	}
 }
 
@@ -139,10 +139,12 @@ func (b *BotInstance) StatsHandler(m *discordgo.MessageCreate) {
 		return
 	}
 
-	off, _ := b.Player.stream.Finished()
-	if !b.Player.playing || b.Player.stream == nil || off || b.Player.session == nil {
+	if !b.Player.playing || b.Player.stream == nil || b.Player.session == nil {
 		b.SendTimedNotice("", "There is currently no stream", "", m.ChannelID, 5*time.Second)
 		return
+	}
+	if off, _ := b.Player.stream.Finished(); off {
+		b.SendTimedNotice("", "There is currently no stream", "", m.ChannelID, 5*time.Second)
 	}
 
 	s := b.Player.session.Stats()
