@@ -1,81 +1,97 @@
 package bot
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 )
 
 func (b *BotInstance) PlayHandler(m *discordgo.MessageCreate) {
+	defer b.Delete(m.Message)
+	if b.Player.playing {
+		b.SendTimedNotice("", "▶️ Play: Nothing to do", "", m.ChannelID, 5*time.Second)
+		return
+	}
 	b.PlayQueue()
-	b.SendNamedNotice(m, "Requested by", "⏯️ Play", "", "")
-	b.DeleteUserMessage(m)
+	b.SendNotice("", fmt.Sprintf("▶️ Started playing for <@%s>", m.Author.ID), "", m.ChannelID)
 }
 
 func (b *BotInstance) PauseHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.Player.playing {
-		b.SendNamedNotice(m, "Requested by", "⏯️ Pause", "Nothing to do", "")
+		b.SendTimedNotice("", "⏸️ Pause: Nothing to do", "", m.ChannelID, 5*time.Second)
 		return
 	}
 
 	if !b.Player.pause {
 		b.Player.stream.SetPaused(true)
 		b.Player.pause = true
-		b.SendNamedNotice(m, "Requested by", "⏯️ Pause", "", "")
+		b.SendNotice("", fmt.Sprintf("⏸️ Paused by request of <@%s>", m.Author.ID), "", m.ChannelID)
 	} else {
-		b.SendNamedNotice(m, "Requested by", "⏯️ Pause", "Nothing to do", "")
+		b.SendTimedNotice("", "⏸️ Pause: Nothing to do", "", m.ChannelID, 5*time.Second)
 	}
 }
 
 func (b *BotInstance) ResumeHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.Player.playing {
-		b.SendNamedNotice(m, "Requested by", "⏯️ Resume", "Nothing to do", "")
+		b.SendNotice("", "▶️ Resume: Nothing to do", "", m.ChannelID)
 		return
 	}
 	if b.Player.pause {
 		b.Player.stream.SetPaused(false)
 		b.Player.pause = false
-		b.SendNamedNotice(m, "Requested by", "⏯️ Resume", "", "")
+		b.SendNotice("", fmt.Sprintf("⏯️ Resumed by request of <@%s>", m.Author.ID), "", m.ChannelID)
 	} else {
-		b.SendNamedNotice(m, "Requested by", "⏯️ Resume", "Nothing to do", "")
+		m := b.SendNotice("", "▶️ Resume: Nothing to do", "", m.ChannelID)
+		b.DeleteAfter(m, 5*time.Second)
 	}
 }
 
 func (b *BotInstance) StopHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.restricted(m) {
-		b.DisplayTemporaryMessage(m, "", "You do not have permission to stop the player", "")
+		b.SendTimedNotice("", "You do not have permission to stop the player", "", m.ChannelID, 5*time.Second)
 		return
 	}
+
 	if !b.Player.playing {
-		b.SendNamedNotice(m, "Requested by", "⏹️ Stop", "Nothing to do", "")
+		b.SendTimedNotice("", "⏹️ Stop: Nothing to do", "", m.ChannelID, 5*time.Second)
 		return
 	}
+
 	b.Player.session.Stop() // nolint:errcheck
 	b.Player.stop = true
-	b.SendNamedNotice(m, "Requested by", "⏹️ Stop", "", "")
+	b.SendNotice("", fmt.Sprintf("⏹️ Stopped for <@%s>", m.Author.ID), "", m.ChannelID)
 }
 
 func (b *BotInstance) SkipHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.restricted(m) {
-		b.DisplayTemporaryMessage(m, "", "You do not have permission to arbitrarily skip a track", "Tip: Start a vote using '!fox vote'")
+		b.SendTimedNotice(
+			"", "You do not have permission to arbitrarily skip a track",
+			`Tip: Start a vote using "!fox vote"`, m.ChannelID, 10*time.Second,
+		)
 		return
 	}
 
 	if b.Player.playing {
 		b.Player.session.Stop() // nolint:errcheck
-		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The currently playing track has been skipped", "Note: This can take a few seconds")
+		b.SendNotice(
+			"", fmt.Sprintf("⏭️ Skipped the currently playing track for <@%s>", m.Author.ID),
+			"Note: This can take a few seconds", m.ChannelID,
+		)
 	} else {
 		b.Player.Pop()
-		b.SendNamedNotice(m, "Requested by", "⏭️ Skip", "The next track in queue has been skipped", "")
+		b.SendNotice("", fmt.Sprintf("⏭️ Skipped the next track in queue <@%s>", m.Author.ID), "", m.ChannelID)
 	}
 }
 
 func (b *BotInstance) JoinHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.restricted(m) {
-		b.DisplayTemporaryMessage(m, "", "Permission denied", "Tip: Only admins and DJs can do that")
+		b.SendTimedNotice("", "You do not have this permission", "Tip: Only admins and DJs can do that", m.ChannelID, 10*time.Second)
 		return
 	}
 
@@ -83,7 +99,7 @@ func (b *BotInstance) JoinHandler(m *discordgo.MessageCreate) {
 	if b.Voice == nil {
 		voice, err := b.Session.ChannelVoiceJoin(b.conf.Bot.Guild, b.conf.Bot.Channels.Voice, false, true)
 		if err != nil {
-			b.SendNamedNotice(m, "Requested by", "Unable to join voice channel", "", "Error was: "+err.Error())
+			b.SendNotice("", fmt.Sprintf("Unable to join voice channel as instructed by <@%s>", m.Author.ID), "Error was: "+err.Error(), m.ChannelID)
 			b.log.Error().Err(err).Msg("unable to connect to voice channel")
 			return
 		}
@@ -93,9 +109,9 @@ func (b *BotInstance) JoinHandler(m *discordgo.MessageCreate) {
 }
 
 func (b *BotInstance) LeaveHandler(m *discordgo.MessageCreate) {
-	defer b.DeleteUserMessage(m)
+	defer b.Delete(m.Message)
 	if !b.restricted(m) {
-		b.DisplayTemporaryMessage(m, "", "Permission denied", "Tip: Only admins and DJs can do that")
+		b.SendTimedNotice("", "You do not have this permission", "Tip: Only admins and DJs can do that", m.ChannelID, 5*time.Second)
 		return
 	}
 
@@ -106,7 +122,7 @@ func (b *BotInstance) LeaveHandler(m *discordgo.MessageCreate) {
 			b.Player.stop = true
 		}
 		if err := b.Voice.Disconnect(); err != nil {
-			b.SendNamedNotice(m, "Requested by", "Unable to leave voice channel", "", "Error was: "+err.Error())
+			b.SendNotice("", fmt.Sprintf("Unable to leave voice channel as instructed by <@%s>", m.Author.ID), "Error was: "+err.Error(), m.ChannelID)
 			b.log.Error().Err(err).Msg("unable to disconnect from voice channel")
 			return
 		}
@@ -114,4 +130,38 @@ func (b *BotInstance) LeaveHandler(m *discordgo.MessageCreate) {
 		b.log.Debug().Str("user", m.Author.Username).Str("method", "leave").Msg("bot left vocal channel")
 		return
 	}
+}
+
+func (b *BotInstance) StatsHandler(m *discordgo.MessageCreate) {
+	defer b.Delete(m.Message)
+	if !b.restricted(m) {
+		b.SendTimedNotice("", "You do not have this permission", "Tip: Only admins and DJs can do that", m.ChannelID, 5*time.Second)
+		return
+	}
+
+	off, _ := b.Player.stream.Finished()
+	if !b.Player.playing || b.Player.stream == nil || off || b.Player.session == nil {
+		b.SendTimedNotice("", "There is currently no stream", "", m.ChannelID, 5*time.Second)
+		return
+	}
+
+	s := b.Player.session.Stats()
+	e := &discordgo.MessageEmbed{
+		Title: "Stream & encoding stats",
+		Color: 0xff5500,
+		Fields: []*discordgo.MessageEmbedField{
+			{Name: "Playback", Value: b.Player.stream.PlaybackPosition().String(), Inline: true},
+			{Name: "Encoded", Value: s.Duration.String(), Inline: true},
+			{Name: "Size", Value: fmt.Sprintf("%5d kB", s.Size), Inline: true},
+			{Name: "Bitrate", Value: fmt.Sprintf("%6.2f kB/s", s.Bitrate), Inline: true},
+			{Name: "Speed", Value: fmt.Sprintf("%5.1fx", s.Speed), Inline: true},
+		},
+	}
+
+	mess, err := b.Session.ChannelMessageSendEmbed(m.ChannelID, e)
+	if err != nil {
+		b.log.Err(err).Msg("unable to send embed")
+		return
+	}
+	b.DeleteAfter(mess, 10*time.Second)
 }

@@ -10,6 +10,8 @@ import (
 	"github.com/jonas747/dca"
 )
 
+// Player holds the current tracks, stream and encoding session
+// It also holds the various states of the player (playing, pause, stop)
 type Player struct {
 	tracks  soundcloud.Tracks
 	tracksM sync.RWMutex

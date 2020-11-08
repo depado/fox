@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -60,9 +61,11 @@ func (b *BotInstance) MessageCreated(s *discordgo.Session, m *discordgo.MessageC
 		b.StopHandler(m)
 	case "vote":
 		b.VoteHandler(m)
+	case "stats":
+		b.StatsHandler(m)
+	default:
+		b.SendTimedNotice("", "Unrecognized command",
+			fmt.Sprintf(`Tip: Use "%s help" for a list of commands`, b.conf.Bot.Prefix), m.ChannelID, 10*time.Second)
+		b.Delete(m.Message)
 	}
-
-	b.DisplayTemporaryMessage(m, "", "Unrecognized command",
-		fmt.Sprintf(`Tip: Use "%s help" for a list of commands`, b.conf.Bot.Prefix))
-	b.DeleteUserMessage(m)
 }

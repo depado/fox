@@ -1,9 +1,6 @@
 # Build Step
 FROM golang:1.15.4-alpine3.12 AS builder
 
-# Prerequisites
-RUN apk update && apk add --no-cache upx
-
 # Dependencies
 WORKDIR $GOPATH/src/github.com/Depado/fox
 COPY . .
@@ -14,7 +11,6 @@ RUN go mod verify
 ARG build
 ARG version
 RUN CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${version} -X main.Build=${build}" -o /tmp/fox
-# RUN upx --brute /tmp/fox
 
 # Final step
 FROM jrottenberg/ffmpeg:3.2-alpine

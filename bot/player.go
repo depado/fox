@@ -20,12 +20,13 @@ func (b *BotInstance) PlayQueue() {
 			b.Player.playing = false
 			b.Session.UpdateStatus(0, "") // nolint:errcheck
 		}()
-		b.log.Debug().Int("length", len(b.Player.tracks)).Msg("starting playing queue")
 		for {
+			tracklen := b.Player.QueueSize()
+			b.log.Debug().Int("length", tracklen).Msg("starting playing queue")
 			b.Vote.Reset()
-			if len(b.Player.tracks) == 0 {
-				b.log.Debug().Int("length", len(b.Player.tracks)).Msg("track length")
-				b.SendPublicMessage("Nothing left to play!", fmt.Sprintf("You can give me more by using the %s command!", b.conf.Bot.Prefix))
+			if tracklen == 0 {
+				b.log.Debug().Int("length", tracklen).Msg("track length")
+				b.SendPublicMessage("Nothing left to play!", fmt.Sprintf("You can give me more by using the %s command!", b.conf.Bot.Prefix), "")
 				return
 			}
 			b.log.Debug().Msg("getting track")
@@ -39,9 +40,12 @@ func (b *BotInstance) PlayQueue() {
 			ts, _, _ := b.Soundcloud.Track().FromTrack(t, false)
 			url, err := ts.Stream(soundcloud.Opus)
 			if err != nil {
-				b.Player.Pop()
-				b.log.Error().Err(err).Msg("unable to get stream url")
-				continue
+				b.log.Debug().Msg("opus format not found, fallback on MP3")
+				if url, err = ts.Stream(soundcloud.ProgressiveMP3); err != nil {
+					b.Player.Pop()
+					b.log.Error().Err(err).Msg("unable to get stream url")
+					continue
+				}
 			}
 			b.Player.playing = true
 			b.Player.stop = false
