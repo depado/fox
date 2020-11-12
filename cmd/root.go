@@ -16,9 +16,10 @@ func AddLoggerFlags(c *cobra.Command) {
 func AddBotFlags(c *cobra.Command) {
 	c.PersistentFlags().String("bot.prefix", "!fox", "prefix to call the bot")
 	c.PersistentFlags().String("bot.guild", "", "guild (server) the bot is connected to")
-	c.PersistentFlags().String("bot.channels.public", "", "public channel ID where basic commands can be issued")
-	c.PersistentFlags().String("bot.channels.control", "", "private channel ID (set your roles) where the bot can be controled")
+	c.PersistentFlags().String("bot.channels.text", "", "text channel ID where some commands can be issued")
 	c.PersistentFlags().String("bot.channels.voice", "", "voice channel ID the bot will stream to")
+	c.PersistentFlags().String("bot.roles.admin", "", "role ID for the admins")
+	c.PersistentFlags().String("bot.roles.dj", "", "role ID for the DJ role")
 	c.PersistentFlags().String("bot.token", "", "private bot token")
 }
 

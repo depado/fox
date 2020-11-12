@@ -19,15 +19,20 @@ type LogConf struct {
 
 type BotConf struct {
 	Channels ChannelsConf `mapstructure:"channels"`
+	Roles    RolesConf    `mapstructure:"roles"`
 	Guild    string       `mapstrcture:"guild"`
 	Token    string       `mapstructure:"token"`
 	Prefix   string       `mapstructure:"prefix"`
 }
 
 type ChannelsConf struct {
-	Public  string `mapstructure:"public"`
-	Control string `mapstructure:"control"`
-	Voice   string `mapstructure:"voice"`
+	Text  string `mapstructure:"text"`
+	Voice string `mapstructure:"voice"`
+}
+
+type RolesConf struct {
+	Admin string `mapstructure:"admin"`
+	DJ    string `mapstructure:"dj"`
 }
 
 type DatabaseConf struct {

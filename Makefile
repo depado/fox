@@ -19,8 +19,14 @@ build: ## Build
 compressed: fullbuild
 	upx --brute $(BINARY)
 
+.PHONY: docker-nopack
+docker-nopack: ## Build the docker image without packing binaries
+	docker build -t $(BINARY)-nopack:latest -t $(BINARY)-nopack:$(BUILD) \
+		--build-arg build=$(BUILD) --build-arg version=$(VERSION) \
+		-f Dockerfile.nopack .
+
 .PHONY: docker
-docker: ## Build the docker image
+docker: ## Build the docker image with packed binaries
 	docker build -t $(BINARY):latest -t $(BINARY):$(BUILD) \
 		--build-arg build=$(BUILD) --build-arg version=$(VERSION) \
 		-f Dockerfile .
