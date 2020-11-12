@@ -1,93 +1,78 @@
 package bot
 
 import (
-	"context"
-	"fmt"
-	"math/rand"
-	"time"
+	"sync"
 
+	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/cmd"
-	"github.com/Depado/soundcloud"
+	"github.com/Depado/fox/commands"
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
-	"go.uber.org/fx"
 )
 
-type BotInstance struct {
-	conf       *cmd.Conf
-	log        *zerolog.Logger
-	Session    *discordgo.Session
-	Soundcloud *soundcloud.Client
-	Voice      *discordgo.VoiceConnection
-	Player     *Player
-	Vote       *VoteHolder
+type Bot struct {
+	log         *zerolog.Logger
+	session     *discordgo.Session
+	allCommands []commands.Command
+	commands    *CommandMap
+	conf        *cmd.Conf
+	acl         *acl.ACL
 }
 
-func NewBotInstance(lc fx.Lifecycle, c *cmd.Conf, log *zerolog.Logger, sc *soundcloud.Client) *BotInstance {
-	rand.Seed(time.Now().UnixNano())
-	dg, err := discordgo.New("Bot " + c.Bot.Token)
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to init")
-	}
-	dg.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged)
-	if err := dg.Open(); err != nil {
-		log.Fatal().Err(err).Msg("unable to open")
+type CommandMap struct {
+	sync.RWMutex
+	m map[string]commands.Command
+}
+
+func (cm *CommandMap) Get(c string) (commands.Command, bool) {
+	cm.Lock()
+	defer cm.Unlock()
+	co, ok := cm.m[c]
+	return co, ok
+}
+
+func NewBot(s *discordgo.Session, l *zerolog.Logger, conf *cmd.Conf, a *acl.ACL, cmds []commands.Command) *Bot {
+	b := &Bot{
+		log:         l,
+		conf:        conf,
+		session:     s,
+		acl:         a,
+		allCommands: cmds,
+		commands:    &CommandMap{m: make(map[string]commands.Command)},
 	}
 
-	voice, err := dg.ChannelVoiceJoin(c.Bot.Guild, c.Bot.Channels.Voice, false, true)
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to initiate voice connection")
+	for _, cmd := range cmds {
+		b.AddCommand(cmd)
 	}
 
-	b := &BotInstance{
-		conf:       c,
-		log:        log,
-		Soundcloud: sc,
-		Session:    dg,
-		Voice:      voice,
-		Player:     &Player{tracks: soundcloud.Tracks{}},
-		Vote:       &VoteHolder{Voters: make(map[string]bool)},
-	}
-	b.Session.AddHandler(b.MessageCreated)
-
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			b.log.Debug().Msg("cleanup")
-			if b.Player.playing {
-				b.Player.stop = true
-				b.Player.session.Stop() // nolint:errcheck
-				b.Player.session.Cleanup()
-			}
-			if b.Voice != nil {
-				b.Voice.Close()
-			}
-			b.Session.Close()
-			return nil
-		},
-	})
+	b.session.AddHandler(b.MessageCreatedHandler)
 
 	return b
 }
 
-// Start is a simple function invoked by fx to bootstrap the dependecy chain
-func Start(l *zerolog.Logger, b *BotInstance) {
-	l.Info().Msg("Bot is now running")
+func (b *Bot) AddCommand(c commands.Command) {
+	b.commands.Lock()
+	defer b.commands.Unlock()
+
+	long, aliases := c.Calls()
+	if long == "" && len(aliases) == 0 {
+		b.log.Error().Msg("unable to add command, no long call or aliases")
+		return
+	}
+	if long != "" {
+		aliases = append([]string{long}, aliases...)
+	}
+
+	for _, a := range aliases {
+		if _, ok := b.commands.m[a]; ok {
+			b.log.Error().Str("command", a).Msg("conflicting command, ignoring")
+		} else {
+			b.commands.m[a] = c
+			b.log.Debug().Str("command", a).Msg("registered command")
+		}
+	}
 }
 
-// SalvageVoice will attempt to disconnect and reconnect to the vocal channel
-func (b *BotInstance) SalvageVoice() error {
-	if b.Voice != nil {
-		if err := b.Voice.Disconnect(); err != nil {
-			return fmt.Errorf("unable to disonncet vocal channel: %w", err)
-		}
-	}
-
-	if b.Session != nil {
-		voice, err := b.Session.ChannelVoiceJoin(b.conf.Bot.Guild, b.conf.Bot.Channels.Voice, false, true)
-		if err != nil {
-			return fmt.Errorf("unable to establish connection to vocal channel: %w", err)
-		}
-		b.Voice = voice
-	}
-	return nil
+func Run(l *zerolog.Logger, b *Bot) {
+	l.Info().Msg("Bot is now running")
 }

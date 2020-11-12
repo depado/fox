@@ -3,13 +3,18 @@ package main
 import (
 	"fmt"
 
+	"github.com/Depado/soundcloud"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 
+	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/bot"
 	"github.com/Depado/fox/cmd"
-	"github.com/Depado/soundcloud"
+	"github.com/Depado/fox/commands"
+	"github.com/Depado/fox/player"
+	"github.com/Depado/fox/session"
+	sp "github.com/Depado/fox/soundcloud"
 )
 
 // Build number and versions injected at compile time, set yours
@@ -36,8 +41,15 @@ var versionCmd = &cobra.Command{
 
 func run() {
 	fx.New(
-		fx.Provide(cmd.NewConf, cmd.NewLogger, soundcloud.NewAutoIDClient, bot.NewBotInstance),
-		fx.Invoke(bot.Start),
+		fx.Provide(
+			cmd.NewConf, cmd.NewLogger, acl.NewACL,
+			session.NewDiscordSession,
+			player.NewPlayer,
+			soundcloud.NewAutoIDClient, sp.NewSoundCloudProvider,
+			commands.InitializeAllCommands,
+			bot.NewBot,
+		),
+		fx.Invoke(bot.Run),
 	).Run()
 }
 
