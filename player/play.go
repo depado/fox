@@ -25,6 +25,9 @@ func (p *Player) Play() {
 			tracklen := p.Queue.Len()
 			if tracklen == 0 {
 				p.SendNotice("Nothing left to play!", fmt.Sprintf("You can give me more by using the `%s` command!", p.conf.Bot.Prefix), "")
+				if err := p.Disconnect(); err != nil {
+					p.log.Err(err).Msg("unable to disconnect from voice channel")
+				}
 				return
 			}
 
