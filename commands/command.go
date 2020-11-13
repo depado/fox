@@ -90,26 +90,14 @@ func (c BaseCommand) GetHelp() Help {
 
 func (c BaseCommand) DisplayHelp(s *discordgo.Session, m *discordgo.Message, prefix string) {
 	desc := c.Help.Description
-
-	var cr string
-	switch c.ChannelRestriction {
-	case acl.Music:
-		cr = "🎶 Music text channel only"
-	case acl.Anywhere:
-		cr = "🌍 No restriction"
-	}
-	desc += fmt.Sprintf("\n\nChannel Restriction\n**%s**", cr)
-
-	var rr string
-	switch c.RoleRestriction {
-	case acl.Admin:
-		rr = "🔐 Admin"
-	case acl.Privileged:
-		rr = "🔒 Admin or DJ"
-	case acl.Anyone:
-		rr = "🔓 No restriction"
-	}
-	desc += fmt.Sprintf("\n\nRole Restriction\n**%s**", rr)
+	desc += fmt.Sprintf(
+		"\n\nChannel Restriction\n**%s**",
+		acl.ChannelRestrictionString(c.ChannelRestriction),
+	)
+	desc += fmt.Sprintf(
+		"\n\nRole Restriction\n**%s**",
+		acl.RoleRestrictionString(c.RoleRestriction),
+	)
 
 	var aliases string
 	if len(c.Aliases) > 0 {

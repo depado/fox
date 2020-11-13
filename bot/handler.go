@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/message"
 	"github.com/bwmarrin/discordgo"
 )
@@ -71,7 +72,8 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 	// Check permissions
 	cr, rr := c.ACL()
 	if !b.acl.Check(rr, cr, member, m.Message) {
-		err := message.SendTimedReply(s, m.Message, "", "You do not have the permission to do that", "", 5*time.Second)
+		msg := fmt.Sprintf("You do not have permission to do that.\n%s\n%s", acl.RoleRestrictionString(rr), acl.ChannelRestrictionString(cr))
+		err := message.SendTimedReply(s, m.Message, "", msg, "", 5*time.Second)
 		if err != nil {
 			b.log.Err(err).Msg("unable to send timed reply")
 		}

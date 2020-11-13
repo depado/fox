@@ -23,7 +23,7 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	var emoji = "🔉"
 
 	if len(args) < 1 {
-		v = c.Player.State.Volume / 256 * 100
+		v = c.Player.State.Volume * 100 / 256
 		if v > 100 {
 			emoji = "🔊"
 		} else if v < 100 {

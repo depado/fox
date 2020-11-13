@@ -30,10 +30,18 @@ func (c *play) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 		}
 		return
 	}
-	c.Player.Play()
+
 	msg := fmt.Sprintf("▶️ Started playing for <@%s>", m.Author.ID)
+	if len(args) > 0 && args[0] == "ambient" {
+		if err := c.Player.SetVolumePercent(50); err != nil {
+			c.log.Err(err).Msg("unable to set volume")
+		} else {
+			msg += " in ambient mode"
+		}
+	}
+	c.Player.Play()
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
-		c.log.Err(err).Msg("unable to ")
+		c.log.Err(err).Msg("unable to send reply")
 	}
 }
 
@@ -52,8 +60,14 @@ func NewPlayCommand(p *player.Player, log *zerolog.Logger) Command {
 				Usage:     cmd,
 				ShortDesc: "Start playing the queue",
 				Description: "This command will start playing the queue. " +
-					"It has no effect if the queue is the player is already " +
-					"active.\nThe bot will join the vocal channel when playing starts",
+					"It has no effect if the player is already " +
+					"active.\nThe bot will join the vocal channel when playing " +
+					"starts.\n\n`ambient` can be passed as an extra argument " +
+					"to play in ambient mode with a lower volume.",
+				Examples: []Example{
+					{Command: "play", Explanation: "Start playing"},
+					{Command: "play ambient", Explanation: "Start playing in ambient mode"},
+				},
 			},
 			Player: p,
 			log:    log.With().Str("command", cmd).Logger(),
