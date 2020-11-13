@@ -15,8 +15,12 @@ func (p *Player) Play() {
 	}
 	go func() {
 		p.audio.Lock()
-		defer p.audio.Unlock()
-
+		defer func() {
+			p.audio.Unlock()
+			if err := p.session.UpdateListeningStatus(""); err != nil {
+				p.log.Err(err).Msg("unable to update listening status")
+			}
+		}()
 		for {
 			tracklen := p.Queue.Len()
 			if tracklen == 0 {
@@ -43,13 +47,13 @@ func (p *Player) Play() {
 				p.log.Err(err).Msg("unable to read stream")
 			}
 
-			p.Queue.Pop()
 			if p.State.Stopped {
 				if err := p.Disconnect(); err != nil {
 					p.log.Err(err).Msg("unable to disconnect from voice channel")
 				}
 				return
 			}
+			p.Queue.Pop()
 		}
 	}()
 }
