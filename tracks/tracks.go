@@ -8,6 +8,7 @@ type Track interface {
 	Embed() *discordgo.MessageEmbed
 	MarkdownLink() string
 	ListenStatus() string
+	GetUser() (string, string)
 }
 
 type Tracks []Track

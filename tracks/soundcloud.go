@@ -13,6 +13,12 @@ import (
 type SoundcloudTrack struct {
 	Track        soundcloud.Track
 	TrackService soundcloud.TrackService
+	User         string
+	AvatarURL    string
+}
+
+func (t SoundcloudTrack) GetUser() (string, string) {
+	return t.User, t.AvatarURL
 }
 
 func (t SoundcloudTrack) ListenStatus() string {

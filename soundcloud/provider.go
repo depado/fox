@@ -41,7 +41,12 @@ func (sc *SoundCloudProvider) GetPlaylist(url string, m *discordgo.Message) (tra
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to get track service from track: %w", err)
 		}
-		tr[i] = tracks.SoundcloudTrack{Track: *track, TrackService: *ts}
+		tr[i] = tracks.SoundcloudTrack{
+			Track:        *track,
+			TrackService: *ts,
+			User:         m.Author.Username + "#" + m.Author.Discriminator,
+			AvatarURL:    m.Author.AvatarURL(""),
+		}
 	}
 
 	e := &discordgo.MessageEmbed{
@@ -59,6 +64,10 @@ func (sc *SoundCloudProvider) GetPlaylist(url string, m *discordgo.Message) (tra
 			{Name: "Duration", Value: durafmt.Parse(time.Duration(pl.Duration) * time.Millisecond).LimitFirstN(2).String(), Inline: true},
 		},
 		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: pl.ArtworkURL},
+		Footer: &discordgo.MessageEmbedFooter{
+			IconURL: m.Author.AvatarURL(""),
+			Text:    "Added by " + m.Author.Username + "#" + m.Author.Discriminator,
+		},
 	}
 
 	return tr, e, nil
@@ -91,5 +100,10 @@ func (sc *SoundCloudProvider) GetTrack(url string, m *discordgo.Message) (tracks
 		},
 	}
 
-	return tracks.SoundcloudTrack{Track: *t, TrackService: *ts}, e, nil
+	return tracks.SoundcloudTrack{
+		Track:        *t,
+		TrackService: *ts,
+		User:         m.Author.Username + "#" + m.Author.Discriminator,
+		AvatarURL:    m.Author.AvatarURL(""),
+	}, e, nil
 }

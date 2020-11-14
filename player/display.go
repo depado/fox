@@ -21,7 +21,7 @@ func fmtDuration(d time.Duration) string {
 }
 
 func (p *Player) GeneratePlayerString(dur time.Duration) string {
-	player := []rune("⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯")
+	player := []rune("------------------------------")
 	pb := p.stream.PlaybackPosition()
 	pos := int(pb*100/dur) * len(player) / 100
 	if pos >= len(player) {
@@ -43,18 +43,22 @@ func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
 	}
 
 	tot := time.Duration(t.Duration()) * time.Millisecond
+	u, a := t.GetUser()
 	e := t.Embed()
+	e.Footer = &discordgo.MessageEmbedFooter{
+		IconURL: a,
+		Text:    "Added by " + u,
+	}
 	if short {
 		e.Fields = nil
 		e.Description = p.GeneratePlayerString(tot)
 	} else {
-		e.Footer = &discordgo.MessageEmbedFooter{
-			Text: fmt.Sprintf(
-				"%d tracks left in queue - %s",
-				p.Queue.Len(), p.Queue.DurationString(),
-			),
-		}
-		e.Description += "\n" + p.GeneratePlayerString(tot)
+		e.Description += fmt.Sprintf(
+			"\n%s\n\n%d tracks left in queue - %s",
+			p.GeneratePlayerString(tot),
+			p.Queue.Len(),
+			p.Queue.DurationString(),
+		)
 	}
 
 	return e
