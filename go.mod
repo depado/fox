@@ -7,7 +7,7 @@ require (
 	github.com/bwmarrin/discordgo v0.22.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/hako/durafmt v0.0.0-20200710122514-c0fb7b4da026
-	github.com/jonas747/dca v0.0.0-20200609191102-fe85ccf0947a
+	github.com/jonas747/dca v0.0.0-20201113050843-65838623978b
 	github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
@@ -23,7 +23,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
-	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd // indirect
+	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/tools v0.0.0-20201105001634-bc3cf281b174 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

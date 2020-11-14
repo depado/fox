@@ -54,9 +54,8 @@ func (t SoundcloudTrack) Embed() *discordgo.MessageEmbed {
 			Name:    t.Track.User.Username,
 			URL:     t.Track.User.PermalinkURL,
 		},
-		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: t.Track.ArtworkURL},
-		Description: "**Now Playing**",
-		Color:       0xff5500,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: t.Track.ArtworkURL},
+		Color:     0xff5500,
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Plays", Value: strconv.Itoa(t.Track.PlaybackCount), Inline: true},
 			{Name: "Likes", Value: strconv.Itoa(t.Track.LikesCount), Inline: true},

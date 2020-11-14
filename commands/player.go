@@ -204,19 +204,18 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 		}
 		return
 	}
-	t := c.Player.Queue.Get()
-	if t == nil {
+
+	short := true
+	if len(args) > 0 && (args[0] == "full" || args[0] == "f") {
+		short = false
+	}
+
+	e := c.Player.GenerateNowPlayingEmbed(short)
+	if e == nil {
 		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
-	}
-
-	e := t.Embed()
-	e.Footer = &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf(
-			"%d tracks left in queue - %s",
-			c.Player.Queue.Len(), c.Player.Queue.DurationString(),
-		),
+		return
 	}
 
 	if _, err := s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
@@ -241,6 +240,12 @@ func NewNowPlayingCommand(p *player.Player, log *zerolog.Logger) Command {
 				ShortDesc: "Display the currently playing track",
 				Description: "This command displays the track that is currently " +
 					"being played. This command has no effect if the player isn't running.",
+				Examples: []Example{
+					{"nowplaying", "Display the current track"},
+					{"np", "Short notation"},
+					{"nowplaying full", "Display the current track with all the info"},
+					{"np f", "Short notation"},
+				},
 			},
 			Player: p,
 			log:    log.With().Str("command", cmd).Logger(),

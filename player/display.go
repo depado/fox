@@ -2,11 +2,33 @@ package player
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func (p *Player) GenerateNowPlayingEmbed() *discordgo.MessageEmbed {
+func fmtDuration(d time.Duration) string {
+	d = d.Round(time.Second)
+	h := d / time.Hour
+	d -= h * time.Hour
+	m := d / time.Minute
+	d -= m * time.Minute
+	s := d / time.Second
+	if h > 0 {
+		return fmt.Sprintf("%02d:%02d:%02d", h, m, s)
+	}
+	return fmt.Sprintf("%02d:%02d", m, s)
+}
+
+func (p *Player) GeneratePlayerString(dur time.Duration) string {
+	player := "--------------------"
+	pb := p.stream.PlaybackPosition()
+	pos := int(pb*100/dur) * len(player) / 100
+	play := player[:pos] + "●" + player[pos:]
+	return fmt.Sprintf("%s  %s  %s", fmtDuration(pb), play, fmtDuration(dur))
+}
+
+func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
 	if !p.State.Playing {
 		return nil
 	}
@@ -16,12 +38,19 @@ func (p *Player) GenerateNowPlayingEmbed() *discordgo.MessageEmbed {
 		return nil
 	}
 
+	tot := time.Duration(t.Duration()) * time.Millisecond
 	e := t.Embed()
-	e.Footer = &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf(
-			"%d tracks left in queue - %s",
-			p.Queue.Len(), p.Queue.DurationString(),
-		),
+	if short {
+		e.Fields = nil
+		e.Description = p.GeneratePlayerString(tot)
+	} else {
+		e.Footer = &discordgo.MessageEmbedFooter{
+			Text: fmt.Sprintf(
+				"%d tracks left in queue - %s",
+				p.Queue.Len(), p.Queue.DurationString(),
+			),
+		}
+		e.Description += "\n" + p.GeneratePlayerString(tot)
 	}
 
 	return e

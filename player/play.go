@@ -116,6 +116,10 @@ func (p *Player) Read(url string) error {
 			}
 			if errors.Is(err, dca.ErrVoiceConnClosed) {
 				p.log.Info().Msg("voice connection lost")
+				if err = p.Disconnect(); err != nil {
+					p.log.Err(err).Msg("unable to disconnect vocal channel")
+					return err
+				}
 				if err = p.Connect(); err != nil {
 					p.log.Err(err).Msg("unable to reconnect")
 					p.voice = nil
