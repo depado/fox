@@ -21,11 +21,16 @@ func fmtDuration(d time.Duration) string {
 }
 
 func (p *Player) GeneratePlayerString(dur time.Duration) string {
-	player := "--------------------"
+	in := "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+	player := []rune(in)
 	pb := p.stream.PlaybackPosition()
 	pos := int(pb*100/dur) * len(player) / 100
-	play := player[:pos] + "●" + player[pos:]
-	return fmt.Sprintf("%s  %s  %s", fmtDuration(pb), play, fmtDuration(dur))
+	if pos >= len(player) {
+		pos = len(player) - 1
+	}
+	player[pos] = '●'
+
+	return fmt.Sprintf("%s  %s  %s", fmtDuration(pb), string(player), fmtDuration(dur))
 }
 
 func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
