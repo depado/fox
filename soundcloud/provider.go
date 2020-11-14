@@ -83,9 +83,12 @@ func (sc *SoundCloudProvider) GetTrack(url string, m *discordgo.Message) (tracks
 			{Name: "Likes", Value: strconv.Itoa(t.LikesCount), Inline: true},
 			{Name: "Reposts", Value: strconv.Itoa(t.RepostsCount), Inline: true},
 			{Name: "Duration", Value: durafmt.Parse(time.Duration(t.Duration) * time.Millisecond).LimitFirstN(2).String(), Inline: true},
-			{Name: "Added by", Value: fmt.Sprintf("<@%s>", m.Author.ID), Inline: false},
 		},
 		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: t.ArtworkURL},
+		Footer: &discordgo.MessageEmbedFooter{
+			IconURL: m.Author.AvatarURL(""),
+			Text:    "Added by " + m.Author.Username + "#" + m.Author.Discriminator,
+		},
 	}
 
 	return tracks.SoundcloudTrack{Track: *t, TrackService: *ts}, e, nil

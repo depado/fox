@@ -21,8 +21,7 @@ func fmtDuration(d time.Duration) string {
 }
 
 func (p *Player) GeneratePlayerString(dur time.Duration) string {
-	in := "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
-	player := []rune(in)
+	player := []rune("⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯")
 	pb := p.stream.PlaybackPosition()
 	pos := int(pb*100/dur) * len(player) / 100
 	if pos >= len(player) {
