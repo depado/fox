@@ -59,7 +59,6 @@ func (sc *SoundCloudProvider) GetPlaylist(url string, m *discordgo.Message) (tra
 			URL:     pl.User.PermalinkURL,
 		},
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Added by", Value: fmt.Sprintf("<@%s>", m.Author.ID), Inline: true},
 			{Name: "Tracks", Value: strconv.Itoa(len(pl.Tracks)), Inline: true},
 			{Name: "Duration", Value: durafmt.Parse(time.Duration(pl.Duration) * time.Millisecond).LimitFirstN(2).String(), Inline: true},
 		},

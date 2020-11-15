@@ -44,7 +44,7 @@ func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
 
 	tot := time.Duration(t.Duration()) * time.Millisecond
 	u, a := t.GetUser()
-	e := t.Embed()
+	e := t.Embed(false)
 	e.Footer = &discordgo.MessageEmbedFooter{
 		IconURL: a,
 		Text:    "Added by " + u,
@@ -53,12 +53,12 @@ func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
 		e.Fields = nil
 		e.Description = p.GeneratePlayerString(tot)
 	} else {
-		e.Description += fmt.Sprintf(
-			"\n%s\n\n%d tracks left in queue - %s",
-			p.GeneratePlayerString(tot),
-			p.Queue.Len(),
-			p.Queue.DurationString(),
-		)
+		e.Description += p.GeneratePlayerString(tot)
+		e.Fields = append(e.Fields, &discordgo.MessageEmbedField{
+			Name:   "Queue",
+			Value:  fmt.Sprintf("%d tracks left in queue - %s", p.Queue.Len(), p.Queue.DurationString()),
+			Inline: false,
+		})
 	}
 
 	return e

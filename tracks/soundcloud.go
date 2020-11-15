@@ -51,7 +51,7 @@ func (t SoundcloudTrack) StreamURL() (string, error) {
 	return url, err
 }
 
-func (t SoundcloudTrack) Embed() *discordgo.MessageEmbed {
+func (t SoundcloudTrack) Embed(duration bool) *discordgo.MessageEmbed {
 	e := &discordgo.MessageEmbed{
 		Title: t.Track.Title,
 		URL:   t.Track.PermalinkURL,
@@ -66,8 +66,15 @@ func (t SoundcloudTrack) Embed() *discordgo.MessageEmbed {
 			{Name: "Plays", Value: strconv.Itoa(t.Track.PlaybackCount), Inline: true},
 			{Name: "Likes", Value: strconv.Itoa(t.Track.LikesCount), Inline: true},
 			{Name: "Reposts", Value: strconv.Itoa(t.Track.RepostsCount), Inline: true},
-			{Name: "Duration", Value: durafmt.Parse(time.Duration(t.Track.Duration) * time.Millisecond).LimitFirstN(2).String(), Inline: true},
 		},
+	}
+
+	if duration {
+		e.Fields = append(e.Fields, &discordgo.MessageEmbedField{
+			Name:   "Duration",
+			Value:  durafmt.Parse(time.Duration(t.Track.Duration) * time.Millisecond).LimitFirstN(2).String(),
+			Inline: true,
+		})
 	}
 
 	if t.Track.Playlist != nil {
