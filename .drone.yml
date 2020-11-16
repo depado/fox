@@ -35,7 +35,7 @@ steps:
         - build="${DRONE_COMMIT_SHA}"
     when:
       event: [push]
-      branch: [master]
+      branch: [main]
 
 
   - name: telegram
