@@ -31,6 +31,7 @@ func AddDatabaseFlags(c *cobra.Command) {
 // command line.
 func AddConfigurationFlag(c *cobra.Command) {
 	c.PersistentFlags().String("conf", "", "configuration file to use")
+	c.PersistentFlags().Int("port", 8080, "port for the healthcheck")
 }
 
 // AddAllFlags will add all the flags provided in this package to the provided

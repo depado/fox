@@ -40,6 +40,7 @@ type DatabaseConf struct {
 }
 
 type Conf struct {
+	Port     int          `mapstructure:"port"`
 	Log      LogConf      `mapstructure:"log"`
 	Bot      BotConf      `mapstructure:"bot"`
 	Database DatabaseConf `mapstructure:"database"`

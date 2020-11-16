@@ -12,6 +12,7 @@ import (
 	"github.com/Depado/fox/bot"
 	"github.com/Depado/fox/cmd"
 	"github.com/Depado/fox/commands"
+	"github.com/Depado/fox/healthcheck"
 	"github.com/Depado/fox/player"
 	"github.com/Depado/fox/session"
 	sp "github.com/Depado/fox/soundcloud"
@@ -42,7 +43,7 @@ var versionCmd = &cobra.Command{
 func run() {
 	fx.New(
 		fx.Provide(
-			cmd.NewConf, cmd.NewLogger, acl.NewACL,
+			cmd.NewConf, cmd.NewLogger, acl.NewACL, healthcheck.NewHealthcheck,
 			session.NewDiscordSession,
 			player.NewPlayer,
 			soundcloud.NewAutoIDClient, sp.NewSoundCloudProvider,

@@ -21,21 +21,21 @@ steps:
       - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.32.2
       - ./bin/golangci-lint run
 
-  - name: gcr
-    image: plugins/gcr
-    settings:
-      repo: discord-fox-bot/fox
-      json_key:
-        from_secret: gcr_credentials
-      tags:
-        - latest
-        - "${DRONE_COMMIT_SHA}"
-      build_args:
-        - version="latest"
-        - build="${DRONE_COMMIT_SHA}"
-    when:
-      event: [push]
-      branch: [main]
+  # - name: gcr
+  #   image: plugins/gcr
+  #   settings:
+  #     repo: discord-fox-bot/fox
+  #     json_key:
+  #       from_secret: gcr_credentials
+  #     tags:
+  #       - latest
+  #       - "${DRONE_COMMIT_SHA}"
+  #     build_args:
+  #       - version="latest"
+  #       - build="${DRONE_COMMIT_SHA}"
+  #   when:
+  #     event: [push]
+  #     branch: [main]
 
 
   - name: telegram
@@ -51,6 +51,10 @@ steps:
         [Build {{build.number}}]({{build.link}}) by {{commit.author}} {{#success build.status}}succeeded{{else}}failed{{/success}} in {{since build.started}} 
 
         `{{truncate commit.sha 8}}`: "{{commit.message}}"
+    when:
+      status:
+      - success
+      - failure
 
 volumes:
   - name: deps
