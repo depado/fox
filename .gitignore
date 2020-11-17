@@ -16,3 +16,4 @@
 conf.*yml
 fox
 dockervol/
+*.priv

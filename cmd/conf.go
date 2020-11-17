@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -101,6 +102,16 @@ func NewConf() (*Conf, error) {
 	conf := &Conf{}
 	if err := viper.Unmarshal(conf); err != nil {
 		return conf, fmt.Errorf("unable to unmarshal conf: %w", err)
+	}
+
+	// Override port value for top-level declaration
+	p := os.Getenv("PORT")
+	if p != "" {
+		port, err := strconv.Atoi(p)
+		if err != nil {
+			return conf, fmt.Errorf("given port isn't an integer: %w", err)
+		}
+		conf.Port = port
 	}
 
 	return conf, nil

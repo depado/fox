@@ -2,13 +2,14 @@ package bot
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/cmd"
 	"github.com/Depado/fox/commands"
-	"github.com/Depado/fox/healthcheck"
 	"github.com/bwmarrin/discordgo"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
@@ -75,9 +76,14 @@ func (b *Bot) AddCommand(c commands.Command) {
 	}
 }
 
-func Run(l *zerolog.Logger, b *Bot, c *cmd.Conf, r *healthcheck.HealthCheck) {
+func Run(l *zerolog.Logger, b *Bot, c *cmd.Conf) {
 	go func() {
-		if err := r.Engine.Run(fmt.Sprintf(":%d", c.Port)); err != nil {
+		gin.SetMode("release")
+		r := gin.New()
+		r.GET("/", func(c *gin.Context) {
+			c.Status(http.StatusOK)
+		})
+		if err := r.Run(fmt.Sprintf(":%d", c.Port)); err != nil {
 			l.Fatal().Err(err).Msg("unable to start healthcheck router")
 		}
 	}()
