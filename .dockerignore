@@ -1,3 +1,4 @@
 fox
 vendor/
 dockervol/
+*.db

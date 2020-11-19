@@ -17,3 +17,4 @@ conf.*yml
 fox
 dockervol/
 *.priv
+*.db

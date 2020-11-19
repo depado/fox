@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog"
 )
 
 func base(title, body, footer string) *discordgo.MessageEmbed {
@@ -36,4 +37,16 @@ func SendTimedReply(s *discordgo.Session, m *discordgo.Message, title, body, foo
 		s.ChannelMessageDelete(mess.ChannelID, mess.ID) // nolint:errcheck
 	}()
 	return nil
+}
+
+func SendTimedReplyLog(s *discordgo.Session, m *discordgo.Message, title, body, footer string, t time.Duration, l zerolog.Logger) {
+	if err := SendTimedReply(s, m, title, body, footer, t); err != nil {
+		l.Err(err).Msg("unable to send timed reply")
+	}
+}
+
+func SendShortTimedNotice(s *discordgo.Session, m *discordgo.Message, body string, l zerolog.Logger) {
+	if err := SendTimedReply(s, m, "", body, "", 5*time.Second); err != nil {
+		l.Err(err).Msg("unable to send timed reply")
+	}
 }

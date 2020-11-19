@@ -29,9 +29,15 @@ func (c *add) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 		return
 	}
 
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
 	tr, e, err := c.sp.GetPlaylist(url, m)
 	if err == nil {
-		c.Player.Queue.Append(tr...)
+		p.Queue.Append(tr...)
 		e.Description = fmt.Sprintf("Added **%d** tracks to end of queue", len(tr))
 		if _, err = s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
 			c.log.Err(err).Msg("unable to send embed")
@@ -41,7 +47,7 @@ func (c *add) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 
 	t, e, err := c.sp.GetTrack(url, m)
 	if err == nil {
-		c.Player.Queue.Append(t)
+		p.Queue.Append(t)
 		e.Description = "Added one tracks to end of queue"
 		if _, err = s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
 			c.log.Err(err).Msg("unable to send embed")
@@ -54,7 +60,7 @@ func (c *add) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 	}
 }
 
-func NewAddCommand(p *player.Player, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
+func NewAddCommand(p *player.Players, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
 	cmd := "add"
 	return &add{
 		sp: sp,
@@ -78,8 +84,8 @@ func NewAddCommand(p *player.Player, log *zerolog.Logger, sp *soundcloud.SoundCl
 					{Command: "a <url>", Explanation: "Add the track using the alias"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }
@@ -100,9 +106,15 @@ func (c *next) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 		return
 	}
 
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
 	tr, e, err := c.sp.GetPlaylist(url, m)
 	if err == nil {
-		c.Player.Queue.Prepend(tr...)
+		p.Queue.Prepend(tr...)
 		e.Description = fmt.Sprintf("Added **%d** tracks to start of queue", len(tr))
 		if _, err = s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
 			c.log.Err(err).Msg("unable to send embed")
@@ -112,7 +124,7 @@ func (c *next) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 
 	t, e, err := c.sp.GetTrack(url, m)
 	if err == nil {
-		c.Player.Queue.Prepend(t)
+		p.Queue.Prepend(t)
 		e.Description = "Added one tracks to start of queue"
 		if _, err = s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
 			c.log.Err(err).Msg("unable to send embed")
@@ -125,7 +137,7 @@ func (c *next) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 	}
 }
 
-func NewNextCommand(p *player.Player, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
+func NewNextCommand(p *player.Players, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
 	cmd := "next"
 	return &next{
 		sp: sp,
@@ -149,8 +161,8 @@ func NewNextCommand(p *player.Player, log *zerolog.Logger, sp *soundcloud.SoundC
 					{Command: "n <url>", Explanation: "Add the track using the alias"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

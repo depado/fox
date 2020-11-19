@@ -62,16 +62,14 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 		return
 	}
 
-	// Retrieve the guild member from the author of the message
-	member, err := s.GuildMember(m.GuildID, m.Author.ID)
-	if err != nil {
-		b.log.Err(err).Msg("unable to get guild member from message author")
-		return
-	}
-
 	// Check permissions
 	cr, rr := c.ACL()
-	if !b.acl.Check(rr, cr, member, m.Message) {
+	ok, err := b.acl.Check(s, m.Message, rr, cr)
+	if err != nil {
+		b.log.Err(err).Msg("unable to check acl")
+		return
+	}
+	if !ok {
 		msg := fmt.Sprintf("You do not have permission to do that.\n%s\n%s", acl.RoleRestrictionString(rr), acl.ChannelRestrictionString(cr))
 		err := message.SendTimedReply(s, m.Message, "", msg, "", 5*time.Second)
 		if err != nil {

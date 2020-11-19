@@ -13,8 +13,8 @@ import (
 	"github.com/Depado/fox/cmd"
 	"github.com/Depado/fox/commands"
 	"github.com/Depado/fox/player"
-	"github.com/Depado/fox/session"
 	sp "github.com/Depado/fox/soundcloud"
+	"github.com/Depado/fox/storage"
 )
 
 // Build number and versions injected at compile time, set yours
@@ -42,9 +42,8 @@ var versionCmd = &cobra.Command{
 func run() {
 	fx.New(
 		fx.Provide(
-			cmd.NewConf, cmd.NewLogger, acl.NewACL,
-			session.NewDiscordSession,
-			player.NewPlayer,
+			cmd.NewConf, cmd.NewLogger, acl.NewACL, player.NewPlayers, storage.NewStormStorage,
+			bot.NewDiscordSession,
 			soundcloud.NewAutoIDClient, sp.NewSoundCloudProvider,
 			commands.InitializeAllCommands,
 			bot.NewBot,

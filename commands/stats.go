@@ -16,7 +16,13 @@ type stats struct {
 }
 
 func (c *stats) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	st := c.Player.Stats()
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	st := p.Stats()
 	if st == nil {
 		if err := message.SendTimedReply(s, m, "", "There is no encoding session", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed response")
@@ -48,7 +54,7 @@ func (c *stats) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 	}()
 }
 
-func NewStatsCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewStatsCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "stats"
 	return &stats{
 		BaseCommand{
@@ -66,8 +72,8 @@ func NewStatsCommand(p *player.Player, log *zerolog.Logger) Command {
 				Description: "This command will display the encoding and " +
 					"streaming stats if a stream is ongoing.",
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

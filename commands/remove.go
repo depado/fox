@@ -17,8 +17,14 @@ type remove struct {
 }
 
 func (c *remove) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
 	if len(args) > 0 && (args[0] == "all" || args[0] == "a" || args[0] == "-a") {
-		c.Player.Queue.Clear()
+		p.Queue.Clear()
 		msg := fmt.Sprintf("🚮 The queue was reset by <@%s>", m.Author.ID)
 		if err := message.SendReply(s, m, "", msg, ""); err != nil {
 			c.log.Err(err).Msg("unable to send reply")
@@ -32,14 +38,14 @@ func (c *remove) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 		}
 		return
 	}
-	c.Player.Queue.RemoveN(n)
+	p.Queue.RemoveN(n)
 	msg := fmt.Sprintf("🚮 The next %d tracks in queue were removed by <@%s>", n, m.Author.ID)
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
 		c.log.Err(err).Msg("unable to send reply")
 	}
 }
 
-func NewRemoveCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewRemoveCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "remove"
 	return &remove{
 		BaseCommand{
@@ -62,8 +68,8 @@ func NewRemoveCommand(p *player.Player, log *zerolog.Logger) Command {
 					{Command: "rm 10", Explanation: "Remove the next 10 tracks in queue"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

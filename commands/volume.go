@@ -22,8 +22,14 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	var err error
 	var emoji = "🔉"
 
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
 	if len(args) < 1 {
-		v = c.Player.State.Volume * 100 / 256
+		v = p.State.Volume * 100 / 256
 		if v > 100 {
 			emoji = "🔊"
 		} else if v < 100 {
@@ -57,7 +63,7 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	}
 
 	// Actually set the volume
-	if err := c.Player.SetVolumePercent(v); err != nil {
+	if err := p.SetVolumePercent(v); err != nil {
 		c.log.Err(err).Msg("unable to set volume percentage")
 		return
 	}
@@ -74,7 +80,7 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	}
 }
 
-func NewVolumeCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewVolumeCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "volume"
 	return &volume{
 		BaseCommand{
@@ -100,8 +106,8 @@ func NewVolumeCommand(p *player.Player, log *zerolog.Logger) Command {
 					{Command: "vol 50%", Explanation: "Sets the volume to half the normal volume using the alias"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

@@ -19,21 +19,8 @@ type LogConf struct {
 }
 
 type BotConf struct {
-	Channels ChannelsConf `mapstructure:"channels"`
-	Roles    RolesConf    `mapstructure:"roles"`
-	Guild    string       `mapstrcture:"guild"`
-	Token    string       `mapstructure:"token"`
-	Prefix   string       `mapstructure:"prefix"`
-}
-
-type ChannelsConf struct {
-	Text  string `mapstructure:"text"`
-	Voice string `mapstructure:"voice"`
-}
-
-type RolesConf struct {
-	Admin string `mapstructure:"admin"`
-	DJ    string `mapstructure:"dj"`
+	Token  string `mapstructure:"token"`
+	Prefix string `mapstructure:"prefix"`
 }
 
 type DatabaseConf struct {

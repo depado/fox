@@ -16,36 +16,45 @@ type play struct {
 }
 
 func (c *play) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	if c.Player.State.Playing && c.Player.State.Paused {
-		c.Player.Resume()
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	if p.State.Playing && p.State.Paused {
+		p.Resume()
 		msg := fmt.Sprintf("⏯️ Resumed by <@%s>", m.Author.ID)
 		if err := message.SendReply(s, m, "", msg, ""); err != nil {
 			c.log.Err(err).Msg("unable to ")
 		}
 		return
 	}
-	if c.Player.State.Playing {
-		if err := message.SendTimedReply(s, m, "", "Already playing", "", 5*time.Second); err != nil {
-			c.log.Err(err).Msg("unable to send timed reply")
-		}
+	if p.State.Playing {
+		message.SendShortTimedNotice(s, m, "Already playing", c.log)
+		return
+	}
+
+	if p.Queue.Len() == 0 {
+		message.SendShortTimedNotice(s, m, "The queue is empty", c.log)
 		return
 	}
 
 	msg := fmt.Sprintf("▶️ Started playing for <@%s>", m.Author.ID)
 	if len(args) > 0 && args[0] == "ambient" {
-		if err := c.Player.SetVolumePercent(50); err != nil {
+		if err := p.SetVolumePercent(50); err != nil {
 			c.log.Err(err).Msg("unable to set volume")
 		} else {
 			msg += " in ambient mode"
 		}
 	}
-	c.Player.Play()
+	p.Play()
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
 		c.log.Err(err).Msg("unable to send reply")
 	}
 }
 
-func NewPlayCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewPlayCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "play"
 	return &play{
 		BaseCommand{
@@ -69,8 +78,8 @@ func NewPlayCommand(p *player.Player, log *zerolog.Logger) Command {
 					{Command: "play ambient", Explanation: "Start playing in ambient mode"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }
@@ -80,21 +89,27 @@ type stop struct {
 }
 
 func (c *stop) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	if !c.Player.State.Playing {
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	if !p.State.Playing {
 		if err := message.SendTimedReply(s, m, "", "Nothing to do", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
 		return
 	}
 
-	c.Player.Stop()
+	p.Stop()
 	msg := fmt.Sprintf("⏹️ Stopped by <@%s>", m.Author.ID)
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
 		c.log.Err(err).Msg("unable to send reply")
 	}
 }
 
-func NewStopCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewStopCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "stop"
 	return &stop{
 		BaseCommand{
@@ -111,8 +126,8 @@ func NewStopCommand(p *player.Player, log *zerolog.Logger) Command {
 				Description: "This command will stop the player. If the player " +
 					"is already stopped, this command has no effect.",
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }
@@ -122,20 +137,26 @@ type pause struct {
 }
 
 func (c *pause) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	if c.Player.State.Paused {
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	if p.State.Paused {
 		if err := message.SendTimedReply(s, m, "", "Already paused", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
 		return
 	}
-	c.Player.Pause()
+	p.Pause()
 	msg := fmt.Sprintf("⏸️ Paused by <@%s>", m.Author.ID)
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
 		c.log.Err(err).Msg("unable to ")
 	}
 }
 
-func NewPauseCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewPauseCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "pause"
 	return &pause{
 		BaseCommand{
@@ -153,8 +174,8 @@ func NewPauseCommand(p *player.Player, log *zerolog.Logger) Command {
 					"track won't be skipped and will keep its current playback position. " +
 					"If the player is already paused this command has no effect.",
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }
@@ -164,14 +185,20 @@ type skip struct {
 }
 
 func (c *skip) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	c.Player.Skip()
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	p.Skip()
 	msg := fmt.Sprintf("⏭️ <@%s> skipped the currently playing track", m.Author.ID)
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
 		c.log.Err(err).Msg("unable to send reply")
 	}
 }
 
-func NewSkipCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewSkipCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "skip"
 	return &skip{
 		BaseCommand{
@@ -187,8 +214,8 @@ func NewSkipCommand(p *player.Player, log *zerolog.Logger) Command {
 				ShortDesc:   "Skip the currently playing track",
 				Description: "This command can be used to skip tracks at will.",
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }
@@ -198,7 +225,13 @@ type np struct {
 }
 
 func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
-	if !c.Player.State.Playing {
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
+	if !p.State.Playing {
 		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
@@ -210,7 +243,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 		short = false
 	}
 
-	e := c.Player.GenerateNowPlayingEmbed(short)
+	e := p.GenerateNowPlayingEmbed(short)
 	if e == nil {
 		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
@@ -223,7 +256,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 	}
 }
 
-func NewNowPlayingCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewNowPlayingCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "nowplaying"
 	return &np{
 		BaseCommand{
@@ -247,8 +280,8 @@ func NewNowPlayingCommand(p *player.Player, log *zerolog.Logger) Command {
 					{"np f", "Short notation"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

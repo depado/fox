@@ -74,7 +74,7 @@ func (p *Player) SendNotice(title, body, footer string) *discordgo.Message {
 		Color: 0xff5500,
 	}
 
-	m, err := p.session.ChannelMessageSendEmbed(p.conf.Bot.Channels.Text, e)
+	m, err := p.session.ChannelMessageSendEmbed(p.GuildState.TextChannel, e)
 	if err != nil {
 		p.log.Err(err).Msg("unable to send embed")
 	}
