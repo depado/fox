@@ -9,9 +9,10 @@ import (
 	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/player"
 	"github.com/Depado/fox/soundcloud"
+	"github.com/Depado/fox/storage"
 )
 
-func InitializeAllCommands(p *player.Player, l *zerolog.Logger, sp *soundcloud.SoundCloudProvider) []Command {
+func InitializeAllCommands(p *player.Players, l *zerolog.Logger, sp *soundcloud.SoundCloudProvider, st *storage.StormDB) []Command {
 	return []Command{
 		NewPlayCommand(p, l),
 		NewPauseCommand(p, l),
@@ -25,6 +26,7 @@ func InitializeAllCommands(p *player.Player, l *zerolog.Logger, sp *soundcloud.S
 		NewSkipCommand(p, l),
 		NewRemoveCommand(p, l),
 		NewStatsCommand(p, l),
+		NewSetupCommand(p, l, st),
 	}
 }
 
@@ -67,9 +69,9 @@ type BaseCommand struct {
 	Options Options
 
 	// Internal fields
-	Help   Help
-	Player *player.Player
-	log    zerolog.Logger
+	Help    Help
+	Players *player.Players
+	log     zerolog.Logger
 }
 
 func (c BaseCommand) ACL() (acl.ChannelRestriction, acl.RoleRestriction) {

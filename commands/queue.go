@@ -16,28 +16,34 @@ type queue struct {
 }
 
 func (c *queue) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
+	p := c.Players.GetPlayer(m.GuildID)
+	if p == nil {
+		c.log.Error().Msg("no player associated to guild ID")
+		return
+	}
+
 	if len(args) > 0 && (args[0] == "shuffle" || args[0] == "s") {
-		if c.Player.Queue.Len() < 2 {
+		if p.Queue.Len() < 2 {
 			err := message.SendTimedReply(s, m, "", "There is not enough tracks to shuffle", "", 5*time.Second)
 			if err != nil {
 				c.log.Err(err).Msg("unable to send embed")
 			}
 			return
 		}
-		c.Player.Queue.Shuffle()
-		err := message.SendReply(s, m, "", fmt.Sprintf("🎲 Shuffled **%d** tracks for <@%s>", c.Player.Queue.Len(), m.Author.ID), "")
+		p.Queue.Shuffle()
+		err := message.SendReply(s, m, "", fmt.Sprintf("🎲 Shuffled **%d** tracks for <@%s>", p.Queue.Len(), m.Author.ID), "")
 		if err != nil {
 			c.log.Err(err).Msg("unable to send embed")
 		}
 		return
 	}
 
-	if _, err := s.ChannelMessageSendEmbed(m.ChannelID, c.Player.Queue.GenerateQueueEmbed()); err != nil {
+	if _, err := s.ChannelMessageSendEmbed(m.ChannelID, p.Queue.GenerateQueueEmbed()); err != nil {
 		c.log.Err(err).Msg("unable to send embed")
 	}
 }
 
-func NewQueueCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewQueueCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "queue"
 	return &queue{
 		BaseCommand{
@@ -61,8 +67,8 @@ func NewQueueCommand(p *player.Player, log *zerolog.Logger) Command {
 					{Command: "q", Explanation: "Display the queue with the alias"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

@@ -37,7 +37,7 @@ func (c *jam) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 	}
 }
 
-func NewJamCommand(p *player.Player, log *zerolog.Logger) Command {
+func NewJamCommand(p *player.Players, log *zerolog.Logger) Command {
 	cmd := "jam"
 	return &jam{
 		BaseCommand{
@@ -60,8 +60,8 @@ func NewJamCommand(p *player.Player, log *zerolog.Logger) Command {
 					{Command: "jam s", Explanation: "Small jam"},
 				},
 			},
-			Player: p,
-			log:    log.With().Str("command", cmd).Logger(),
+			Players: p,
+			log:     log.With().Str("command", cmd).Logger(),
 		},
 	}
 }

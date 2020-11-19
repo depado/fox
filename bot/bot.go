@@ -8,17 +8,23 @@ import (
 	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/cmd"
 	"github.com/Depado/fox/commands"
+	"github.com/Depado/fox/guild"
+	"github.com/Depado/fox/player"
+	"github.com/Depado/fox/storage"
+	"github.com/asdine/storm/v3"
 	"github.com/bwmarrin/discordgo"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
 type Bot struct {
-	log         *zerolog.Logger
+	log         zerolog.Logger
 	session     *discordgo.Session
 	allCommands []commands.Command
 	commands    *CommandMap
 	conf        *cmd.Conf
+	players     *player.Players
+	storage     *storage.StormDB
 	acl         *acl.ACL
 }
 
@@ -34,21 +40,48 @@ func (cm *CommandMap) Get(c string) (commands.Command, bool) {
 	return co, ok
 }
 
-func NewBot(s *discordgo.Session, l *zerolog.Logger, conf *cmd.Conf, a *acl.ACL, cmds []commands.Command) *Bot {
+func NewBot(s *discordgo.Session, l *zerolog.Logger, c *cmd.Conf, cmds []commands.Command, p *player.Players, storage *storage.StormDB, a *acl.ACL) *Bot {
 	b := &Bot{
-		log:         l,
-		conf:        conf,
+		log:         l.With().Str("component", "bot").Logger(),
+		conf:        c,
 		session:     s,
-		acl:         a,
 		allCommands: cmds,
+		players:     p,
 		commands:    &CommandMap{m: make(map[string]commands.Command)},
+		storage:     storage,
+		acl:         a,
 	}
 
 	for _, cmd := range cmds {
 		b.AddCommand(cmd)
 	}
 
+	for _, g := range b.session.State.Guilds {
+		var err error
+		var gstate *guild.State
+
+		if gstate, err = b.storage.GetGuildState(g.ID); err != nil {
+			if err == storm.ErrNotFound {
+				if gstate, err = b.storage.NewGuildState(g.ID); err != nil {
+					b.log.Err(err).Msg("unable to instantiate new guild state")
+					continue
+				}
+			} else {
+				b.log.Err(err).Msg("unable to fetch guild state")
+				continue
+			}
+		}
+
+		if err := p.Create(s, c, l, g.ID, storage, gstate); err != nil {
+			l.Err(err).Msg("unable to handle guild create")
+			continue
+		}
+		l.Debug().Str("guild", g.ID).Str("name", g.Name).Msg("registered new player")
+	}
+
 	b.session.AddHandler(b.MessageCreatedHandler)
+	b.session.AddHandler(func(s *discordgo.Session, g *discordgo.GuildCreate) {})
+	b.session.AddHandler(func(s *discordgo.Session, vsu *discordgo.VoiceStateUpdate) {})
 
 	return b
 }
