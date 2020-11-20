@@ -1,8 +1,8 @@
 package player
 
-import "github.com/Depado/fox/guild"
+import "github.com/Depado/fox/models"
 
-func (p *Player) UpdateConf(gc *guild.Conf) {
+func (p *Player) UpdateConf(gc *models.Conf) {
 	log := p.log.With().Str("action", "conf_update").Logger()
 	if p.Conf.VoiceChannel != gc.VoiceChannel {
 		log.Debug().Str("old", p.Conf.VoiceChannel).Str("new", gc.VoiceChannel).Msg("voice channel changed")

@@ -1,4 +1,4 @@
-package guild
+package models
 
 import (
 	"fmt"

@@ -3,7 +3,7 @@ package acl
 import (
 	"fmt"
 
-	"github.com/Depado/fox/guild"
+	"github.com/Depado/fox/models"
 	"github.com/Depado/fox/storage"
 	"github.com/bwmarrin/discordgo"
 )
@@ -36,7 +36,7 @@ func NewACL(s *storage.StormDB) *ACL {
 // Check will perform checks for the given RoleRestriction and
 // ChannelRestriction.
 func (a ACL) Check(s *discordgo.Session, m *discordgo.Message, r RoleRestriction, c ChannelRestriction) (bool, error) {
-	var gc *guild.Conf
+	var gc *models.Conf
 	var err error
 	var rc bool
 
@@ -84,12 +84,12 @@ func (a ACL) Check(s *discordgo.Session, m *discordgo.Message, r RoleRestriction
 }
 
 // IsMusic will check if the provided message was sent to the music channel.
-func (a ACL) IsMusic(m *discordgo.Message, gc *guild.Conf) bool {
+func (a ACL) IsMusic(m *discordgo.Message, gc *models.Conf) bool {
 	return m.ChannelID == gc.TextChannel
 }
 
 // IsPrivileged will check if a member is either admin or DJ.
-func (a ACL) IsPrivileged(s *discordgo.Session, m *discordgo.Message, gc *guild.Conf) (bool, error) {
+func (a ACL) IsPrivileged(s *discordgo.Session, m *discordgo.Message, gc *models.Conf) (bool, error) {
 	adm, err := a.IsAdmin(s, m)
 	if err != nil {
 		return false, fmt.Errorf("check admin: %w", err)

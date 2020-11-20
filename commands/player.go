@@ -268,6 +268,9 @@ func NewNowPlayingCommand(p *player.Players, log zerolog.Logger) Command {
 			},
 			Long:    cmd,
 			Aliases: []string{"np"},
+			SubCommands: []SubCommand{
+				{Long: "full", Aliases: []string{"f"}, Description: "Display all the available information"},
+			},
 			Help: Help{
 				Usage:     cmd,
 				ShortDesc: "Display the currently playing track",

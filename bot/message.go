@@ -50,6 +50,16 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 		message.Delete(s, m.Message, b.log)
 		return
 	}
+	opts := c.Opts()
+
+	// Check if DM and if so, check if the command has DM capability
+	if m.GuildID == "" && !opts.DMCapability {
+		err := message.SendReply(s, m.Message, "", "Commands must be executed in a server channel.\nThe only exception is the `help` command.", "")
+		if err != nil {
+			b.log.Err(err).Msg("unable to send reply")
+		}
+		return
+	}
 
 	// Check permissions
 	cr, rr := c.ACL()
@@ -59,14 +69,13 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 		return
 	}
 	if !ok {
-		msg := fmt.Sprintf("You do not have permission to do that.\n%s\n%s", acl.RoleRestrictionString(rr), acl.ChannelRestrictionString(cr))
+		msg := fmt.Sprintf("You do not have permission to do that.\n**%s**", acl.RestrictionString(cr, rr))
 		message.SendShortTimedNotice(s, m.Message, msg, b.log)
 		message.Delete(s, m.Message, b.log)
 		return
 	}
 
 	// Act on command options
-	opts := c.Opts()
 	if opts.ArgsRequired && len(args) == 0 {
 		msg := fmt.Sprintf(
 			"The `%s` command requires additional arguments.\nType `%s help %s` to view this command's help page",

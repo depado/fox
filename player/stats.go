@@ -26,12 +26,49 @@ var whiteStyle = chart.Style{
 	FontColor:   chart.ColorWhite,
 }
 
+func MinMax(array []float64) (float64, float64) {
+	var max float64 = array[0]
+	var min float64 = array[0]
+	for _, value := range array {
+		if max < value {
+			max = value
+		}
+		if min > value {
+			min = value
+		}
+	}
+	return min, max
+}
+
 func (s *Stats) GenerateChart() *chart.Chart {
 	s.RLock()
 	defer s.RUnlock()
 
 	if len(s.BiteRateAxis) < 2 {
 		return nil
+	}
+
+	min, max := MinMax(s.BiteRateAxis)
+	if min > 5 {
+		min -= 5
+	}
+	max += 5
+
+	cSeries := chart.ContinuousSeries{
+		Style: chart.Style{
+			Show:      true,
+			FillColor: chart.GetDefaultColor(0).WithAlpha(50),
+		},
+		XValues: s.TimeAxis,
+		YValues: s.BiteRateAxis,
+	}
+
+	annotation := chart.LastValueAnnotation(cSeries)
+	annotation.Style = chart.Style{
+		Show:        true,
+		FontColor:   chart.ColorWhite,
+		FillColor:   chart.GetDefaultColor(0).WithAlpha(50),
+		StrokeColor: chart.GetDefaultColor(0),
 	}
 
 	graph := chart.Chart{
@@ -51,6 +88,10 @@ func (s *Stats) GenerateChart() *chart.Chart {
 		YAxis: chart.YAxis{
 			AxisType: chart.YAxisSecondary,
 			Style:    whiteStyle,
+			Range: &chart.ContinuousRange{
+				Min: min,
+				Max: max,
+			},
 			ValueFormatter: func(v interface{}) string {
 				return fmt.Sprintf("%.0f kB/s", v.(float64))
 			},
@@ -60,14 +101,8 @@ func (s *Stats) GenerateChart() *chart.Chart {
 			FillColor: chart.ColorTransparent,
 		},
 		Series: []chart.Series{
-			chart.ContinuousSeries{
-				Style: chart.Style{
-					Show:      true,
-					FillColor: chart.GetDefaultColor(0).WithAlpha(50),
-				},
-				XValues: s.TimeAxis,
-				YValues: s.BiteRateAxis,
-			},
+			cSeries,
+			annotation,
 		},
 	}
 

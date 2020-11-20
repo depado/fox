@@ -16,12 +16,8 @@ func (p *Player) Play() {
 	}
 	go func() {
 		p.audio.Lock()
-		defer func() {
-			p.audio.Unlock()
-			if err := p.session.UpdateListeningStatus(""); err != nil {
-				p.log.Err(err).Msg("unable to update listening status")
-			}
-		}()
+		defer p.audio.Unlock()
+
 		for {
 			tracklen := p.Queue.Len()
 			if tracklen == 0 {
@@ -42,9 +38,6 @@ func (p *Player) Play() {
 				p.log.Err(err).Msg("unable to find a suitable stream")
 				p.Queue.Pop()
 				continue
-			}
-			if err := p.session.UpdateListeningStatus(t.ListenStatus()); err != nil {
-				p.log.Err(err).Msg("unable to update listening status")
 			}
 
 			if err := p.Read(stream); err != nil {

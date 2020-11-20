@@ -18,3 +18,4 @@ fox
 dockervol/
 *.priv
 *.db
+*.json
