@@ -14,13 +14,13 @@ import (
 
 type SoundCloudProvider struct {
 	client *soundcloud.Client
-	log    *zerolog.Logger
+	log    zerolog.Logger
 }
 
-func NewSoundCloudProvider(log *zerolog.Logger, c *soundcloud.Client) *SoundCloudProvider {
+func NewSoundCloudProvider(log zerolog.Logger, c *soundcloud.Client) *SoundCloudProvider {
 	return &SoundCloudProvider{
 		client: c,
-		log:    log,
+		log:    log.With().Str("component", "soundcloudprovider").Logger(),
 	}
 }
 

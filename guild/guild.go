@@ -10,8 +10,8 @@ var (
 	ChannelNotFoundError = fmt.Errorf("no channel found")
 )
 
-// State represents the guild state at a given point.
-type State struct {
+// Conf represents the guild conf at a given point.
+type Conf struct {
 	ID             string
 	VoiceChannel   string `json:"voice"`
 	TextChannel    string `json:"text"`
@@ -19,23 +19,23 @@ type State struct {
 	PrivilegedRole string `json:"privileged_role"`
 }
 
-// New creates a new state for a given guild ID
-func NewState(id string) *State {
-	return &State{
+// New creates a new conf for a given guild ID
+func NewConf(id string) *Conf {
+	return &Conf{
 		ID: id,
 	}
 }
 
 // SetVoiceChannel will cycle through the available channels to check if the
-// vocal channel actually exists and set its ID in the state
-func (st *State) SetChannel(s *discordgo.Session, value string, voice bool) error {
+// vocal channel actually exists and set its ID in the conf
+func (c *Conf) SetChannel(s *discordgo.Session, value string, voice bool) error {
 	var dtype discordgo.ChannelType
 
-	if st.ID == "" {
-		return fmt.Errorf("guild state with empty ID")
+	if c.ID == "" {
+		return fmt.Errorf("guild Conf with empty ID")
 	}
 
-	chans, err := s.GuildChannels(st.ID)
+	chans, err := s.GuildChannels(c.ID)
 	if err != nil {
 		return err
 	}
@@ -46,12 +46,12 @@ func (st *State) SetChannel(s *discordgo.Session, value string, voice bool) erro
 	}
 
 	var found bool
-	for _, c := range chans {
-		if (c.Name == value || c.ID == value) && c.Type == dtype {
+	for _, ch := range chans {
+		if (ch.Name == value || c.ID == value) && ch.Type == dtype {
 			if voice {
-				st.VoiceChannel = c.ID
+				c.VoiceChannel = ch.ID
 			} else {
-				st.TextChannel = c.ID
+				c.TextChannel = ch.ID
 			}
 			found = true
 		}

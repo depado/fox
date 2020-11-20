@@ -29,7 +29,7 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	}
 
 	if len(args) < 1 {
-		v = p.State.Volume * 100 / 256
+		v = p.Volume() * 100 / 256
 		if v > 100 {
 			emoji = "🔊"
 		} else if v < 100 {
@@ -80,7 +80,7 @@ func (c *volume) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	}
 }
 
-func NewVolumeCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewVolumeCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "volume"
 	return &volume{
 		BaseCommand{

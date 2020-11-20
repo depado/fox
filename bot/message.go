@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/message"
@@ -27,19 +26,14 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 	// Check for well formed command
 	fields := strings.Fields(m.Content)
 	if len(fields) < 2 {
-		if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
+		message.Delete(s, m.Message, b.log)
 		return
 	}
 	args := fields[2:]
 
+	// Check for help command
 	if fields[1] == "help" || fields[1] == "h" {
-		defer func() {
-			if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-				b.log.Err(err).Msg("unable to delete user message")
-			}
-		}()
+		defer message.Delete(s, m.Message, b.log)
 
 		if len(args) < 1 {
 			b.DisplayGlobalHelp(s, m)
@@ -52,13 +46,8 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 	// Retrieve the associated command
 	c, ok := b.commands.Get(fields[1])
 	if !ok {
-		err := message.SendTimedReply(s, m.Message, "", "Unknown command", "", 5*time.Second)
-		if err != nil {
-			b.log.Err(err).Msg("unable to send timed reply")
-		}
-		if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
+		message.SendShortTimedNotice(s, m.Message, "Unknown command", b.log)
+		message.Delete(s, m.Message, b.log)
 		return
 	}
 
@@ -71,13 +60,8 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 	}
 	if !ok {
 		msg := fmt.Sprintf("You do not have permission to do that.\n%s\n%s", acl.RoleRestrictionString(rr), acl.ChannelRestrictionString(cr))
-		err := message.SendTimedReply(s, m.Message, "", msg, "", 5*time.Second)
-		if err != nil {
-			b.log.Err(err).Msg("unable to send timed reply")
-		}
-		if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
+		message.SendShortTimedNotice(s, m.Message, msg, b.log)
+		message.Delete(s, m.Message, b.log)
 		return
 	}
 
@@ -90,20 +74,12 @@ func (b *Bot) MessageCreatedHandler(s *discordgo.Session, m *discordgo.MessageCr
 			b.conf.Bot.Prefix,
 			c.GetHelp().Usage,
 		)
-		if err := message.SendTimedReply(s, m.Message, "", msg, "", 5*time.Second); err != nil {
-			b.log.Err(err).Msg("unable to send timed reply")
-		}
-		if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-			b.log.Err(err).Msg("unable to delete user message")
-		}
+		message.SendShortTimedNotice(s, m.Message, msg, b.log)
+		message.Delete(s, m.Message, b.log)
 		return
 	}
 	if opts.DeleteUserMessage {
-		defer func() {
-			if err := s.ChannelMessageDelete(m.ChannelID, m.ID); err != nil {
-				b.log.Err(err).Msg("unable to delete user message")
-			}
-		}()
+		defer message.Delete(s, m.Message, b.log)
 	}
 	c.Handler(s, m.Message, args)
 }

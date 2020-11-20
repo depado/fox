@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/jonas747/dca"
 )
 
 // Play will start to play the current queue
 func (p *Player) Play() {
-	if p.State.Playing {
+	if p.Playing() {
 		return
 	}
 	go func() {
@@ -50,7 +51,7 @@ func (p *Player) Play() {
 				p.log.Err(err).Msg("unable to read stream")
 			}
 
-			if p.State.Stopped {
+			if p.Stopped() {
 				if err := p.Disconnect(); err != nil {
 					p.log.Err(err).Msg("unable to disconnect from voice channel")
 				}
@@ -70,8 +71,11 @@ func (p *Player) onReadStart() error {
 	if err := p.voice.Speaking(true); err != nil {
 		return fmt.Errorf("failed setting voice to speaking: %w", err)
 	}
-	p.State.Playing = true
-	p.State.Stopped = false
+	p.Stats = &Stats{}
+	p.state.Lock()
+	defer p.state.Unlock()
+	p.state.Playing = true
+	p.state.Stopped = false
 	return nil
 }
 
@@ -81,7 +85,10 @@ func (p *Player) onReadEnd() {
 			p.log.Err(err).Msg("unable to set speaking to false")
 		}
 	}
-	p.State.Playing = false
+	p.Stats = nil
+	p.state.Lock()
+	defer p.state.Unlock()
+	p.state.Playing = false
 	p.stream = nil
 	p.encode = nil
 }
@@ -97,7 +104,7 @@ func (p *Player) Read(url string) error {
 	opts := dca.StdEncodeOptions
 	opts.RawOutput = true
 	opts.Bitrate = 120
-	opts.Volume = p.State.Volume
+	opts.Volume = p.Volume()
 
 	p.encode, err = dca.EncodeFile(url, opts)
 	if err != nil {
@@ -107,6 +114,8 @@ func (p *Player) Read(url string) error {
 
 	done := make(chan error)
 	p.stream = dca.NewStream(p.encode, p.voice, done)
+	tc := time.NewTicker(5 * time.Second)
+	defer tc.Stop()
 
 	for {
 		select {
@@ -133,6 +142,18 @@ func (p *Player) Read(url string) error {
 		case <-p.stop:
 			p.log.Debug().Str("event", "stop").Msg("stopping player")
 			return nil
+		case <-tc.C:
+			d := p.stream.PlaybackPosition()
+			s := p.encode.Stats()
+			p.Stats.Lock()
+			p.Stats.PlaybackPosition = d
+			p.Stats.Bitrate = s.Bitrate
+			p.Stats.Duration = s.Duration
+			p.Stats.Speed = s.Speed
+			p.Stats.Size = s.Size
+			p.Stats.TimeAxis = append(p.Stats.TimeAxis, float64(s.Duration))
+			p.Stats.BiteRateAxis = append(p.Stats.BiteRateAxis, float64(s.Bitrate))
+			p.Stats.Unlock()
 		}
 	}
 }
