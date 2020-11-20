@@ -3,6 +3,7 @@
 export GO111MODULE=on
 export CGO_ENABLED=0
 export VERSION=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo "0.1.0")
+export TAG=$VERSION
 export BUILD=$(shell git rev-parse HEAD 2> /dev/null || echo "undefined")
 BINARY=fox
 LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.Build=$(BUILD) -s -w"
@@ -34,6 +35,14 @@ docker: ## Build the docker image with packed binaries
 .PHONY: lint
 lint: ## Runs the linter
 	$(GOPATH)/bin/golangci-lint run --exclude-use-default=false
+
+.PHONY: release
+release: ## Create a new release on Github
+	goreleaser
+
+.PHONY: snapshot
+snapshot: ## Create a new snapshot release
+	goreleaser --snapshot --skip-publish --rm-dist
 
 .PHONY: test
 test: ## Run the test suite

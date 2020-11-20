@@ -1,4 +1,6 @@
 fox
 vendor/
 dockervol/
+dist/
 *.db
+*.yml

@@ -19,3 +19,4 @@ dockervol/
 *.priv
 *.db
 *.json
+dist/

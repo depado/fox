@@ -5,6 +5,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/Depado/fox/acl"
+	"github.com/Depado/fox/message"
 	"github.com/Depado/fox/player"
 	"github.com/Depado/fox/storage"
 )
@@ -16,8 +17,18 @@ type fav struct {
 
 func (c *fav) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
 	if len(args) == 0 {
-		// Save
+		p := c.Players.GetPlayer(m.GuildID)
+		if p == nil {
+			c.log.Error().Msg("no player associated to guild ID")
+			return
+		}
+		if !p.Playing() {
+			message.SendShortTimedNotice(s, m, "No track is currently playing", c.log)
+			return
+		}
+		// Save current track
 	}
+
 	if len(args) > 0 {
 		switch args[0] {
 		case "show", "s":
