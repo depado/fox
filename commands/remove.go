@@ -31,6 +31,7 @@ func (c *remove) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 		}
 		return
 	}
+
 	n, err := strconv.Atoi(args[0])
 	if err != nil || n < 1 {
 		if err := message.SendTimedReply(s, m, "", "The argument is invalid", "", 5*time.Second); err != nil {
@@ -38,6 +39,7 @@ func (c *remove) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 		}
 		return
 	}
+
 	p.Queue.RemoveN(n)
 	msg := fmt.Sprintf("🚮 The next %d tracks in queue were removed by <@%s>", n, m.Author.ID)
 	if err := message.SendReply(s, m, "", msg, ""); err != nil {
@@ -45,7 +47,7 @@ func (c *remove) Handler(s *discordgo.Session, m *discordgo.Message, args []stri
 	}
 }
 
-func NewRemoveCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewRemoveCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "remove"
 	return &remove{
 		BaseCommand{

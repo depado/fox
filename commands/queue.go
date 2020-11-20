@@ -43,7 +43,7 @@ func (c *queue) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 	}
 }
 
-func NewQueueCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewQueueCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "queue"
 	return &queue{
 		BaseCommand{

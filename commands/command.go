@@ -12,7 +12,7 @@ import (
 	"github.com/Depado/fox/storage"
 )
 
-func InitializeAllCommands(p *player.Players, l *zerolog.Logger, sp *soundcloud.SoundCloudProvider, st *storage.StormDB) []Command {
+func InitializeAllCommands(p *player.Players, l zerolog.Logger, sp *soundcloud.SoundCloudProvider, st *storage.StormDB) []Command {
 	return []Command{
 		NewPlayCommand(p, l),
 		NewPauseCommand(p, l),

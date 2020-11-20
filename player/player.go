@@ -30,7 +30,7 @@ func (p *Players) GetPlayer(guildID string) *Player {
 }
 
 // Create will create a new player and associate it with the guild
-func (p *Players) Create(s *discordgo.Session, conf *cmd.Conf, log *zerolog.Logger, guild string, storage *storage.StormDB, gs *guild.State) error {
+func (p *Players) Create(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guild string, storage *storage.StormDB, gs *guild.Conf) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -49,6 +49,7 @@ func (p *Players) Create(s *discordgo.Session, conf *cmd.Conf, log *zerolog.Logg
 func (p *Players) Kill() {
 	p.Lock()
 	defer p.Unlock()
+
 	for _, pl := range p.Players {
 		pl.Kill()
 	}
@@ -63,11 +64,11 @@ func NewPlayers() *Players {
 // Player is the struct in charge of connecting to voice channels and streaming
 // tracks to them.
 type Player struct {
-	Queue      *Queue
-	State      *State
-	Guild      string
-	GuildState *guild.State
-	Storage    *storage.StormDB
+	Queue   *Queue
+	state   *State
+	Guild   string
+	Conf    *guild.Conf
+	Storage *storage.StormDB
 
 	log     zerolog.Logger
 	conf    *cmd.Conf
@@ -77,22 +78,23 @@ type Player struct {
 	voice   *discordgo.VoiceConnection
 	session *discordgo.Session
 	audio   sync.RWMutex
+	Stats   *Stats
 }
 
 // NewPlayer will create a new player from scratch using the provided
 // arguments
-func NewPlayer(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guildID string, storage *storage.StormDB, gs *guild.State) (*Player, error) {
+func NewPlayer(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guildID string, storage *storage.StormDB, gs *guild.Conf) (*Player, error) {
 	st := NewState()
 	p := &Player{
-		State:      st,
-		Queue:      NewQueue(st),
-		Storage:    storage,
-		Guild:      guildID,
-		GuildState: gs,
-		session:    s,
-		log:        log.With().Str("component", "player").Logger(),
-		conf:       conf,
-		stop:       make(chan bool),
+		state:   st,
+		Queue:   NewQueue(st),
+		Storage: storage,
+		Guild:   guildID,
+		Conf:    gs,
+		session: s,
+		log:     log.With().Str("component", "player").Logger(),
+		conf:    conf,
+		stop:    make(chan bool),
 	}
 
 	return p, nil
@@ -112,8 +114,6 @@ func (p *Player) Disconnect() error {
 			return fmt.Errorf("disconnect voice channel: %w", err)
 		}
 		p.voice = nil
-	} else {
-		return fmt.Errorf("disconnect voice channel: no voice connection active")
 	}
 	return nil
 }
@@ -121,7 +121,7 @@ func (p *Player) Disconnect() error {
 // Connect will connect the player to the voice channel.
 func (p *Player) Connect() error {
 	if p.session != nil {
-		voice, err := p.session.ChannelVoiceJoin(p.GuildState.ID, p.GuildState.VoiceChannel, false, true)
+		voice, err := p.session.ChannelVoiceJoin(p.Conf.ID, p.Conf.VoiceChannel, false, true)
 		if err != nil {
 			return fmt.Errorf("unable to establish connection to vocal channel: %w", err)
 		}

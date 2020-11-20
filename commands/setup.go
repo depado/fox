@@ -19,8 +19,8 @@ type setup struct {
 	Storage *storage.StormDB
 }
 
-func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gstate *guild.State, value string) {
-	if err := gstate.SetChannel(s, value, true); err != nil {
+func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gconf *guild.Conf, value string) {
+	if err := gconf.SetChannel(s, value, true); err != nil {
 		if errors.Is(err, guild.ChannelNotFoundError) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any vocal channel named like this", c.log)
 			return
@@ -31,8 +31,8 @@ func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, g
 	message.SendShortTimedNotice(s, m, "Alright, I'll stream the music to this channel from now on", c.log)
 }
 
-func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gstate *guild.State, value string) {
-	if err := gstate.SetChannel(s, value, false); err != nil {
+func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gconf *guild.Conf, value string) {
+	if err := gconf.SetChannel(s, value, false); err != nil {
 		if errors.Is(err, guild.ChannelNotFoundError) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any text channel named like this", c.log)
 			return
@@ -40,14 +40,14 @@ func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gs
 		c.log.Err(err).Msg("unable to set voice channel")
 		return
 	}
-	message.SendShortTimedNotice(s, m, fmt.Sprintf("Noted, the music channel is now <#%s>", gstate.TextChannel), c.log)
+	message.SendShortTimedNotice(s, m, fmt.Sprintf("Noted, the music channel is now <#%s>", gconf.TextChannel), c.log)
 }
 
 func (c *setup) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
 	var err error
-	var gstate *guild.State
+	var gconf *guild.Conf
 
-	if gstate, err = c.Storage.GetGuildState(m.GuildID); err != nil {
+	if gconf, err = c.Storage.GetGuilConf(m.GuildID); err != nil {
 		c.log.Err(err).Msg("unable to fetch guild state")
 		return
 	}
@@ -66,20 +66,23 @@ func (c *setup) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 
 	switch param {
 	case "voice":
-		c.handleVoiceChannel(s, m, gstate, value)
+		c.handleVoiceChannel(s, m, gconf, value)
+		if pl := c.Players.GetPlayer(m.GuildID); pl != nil {
+			pl.UpdateConf(gconf)
+		}
 	case "text":
-		c.handleTextChannel(s, m, gstate, value)
+		c.handleTextChannel(s, m, gconf, value)
 	default:
 		message.SendShortTimedNotice(s, m, "Unknwon parameter", c.log)
 		return
 	}
 
-	if err := c.Storage.SaveGuildState(gstate); err != nil {
+	if err := c.Storage.SaveGuildState(gconf); err != nil {
 		c.log.Err(err).Msg("unable to save guild state")
 	}
 }
 
-func NewSetupCommand(p *player.Players, log *zerolog.Logger, storage *storage.StormDB) Command {
+func NewSetupCommand(p *player.Players, log zerolog.Logger, storage *storage.StormDB) Command {
 	cmd := "setup"
 	return &setup{
 		BaseCommand: BaseCommand{

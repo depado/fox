@@ -33,7 +33,7 @@ func (p *Player) GeneratePlayerString(dur time.Duration) string {
 }
 
 func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
-	if !p.State.Playing {
+	if !p.Playing() {
 		return nil
 	}
 
@@ -64,7 +64,11 @@ func (p *Player) GenerateNowPlayingEmbed(short bool) *discordgo.MessageEmbed {
 	return e
 }
 
-func (p *Player) SendNotice(title, body, footer string) *discordgo.Message {
+func (p *Player) SendNotice(title, body, footer string) {
+	if p.Conf.TextChannel == "" {
+		return
+	}
+
 	e := &discordgo.MessageEmbed{
 		Title:       title,
 		Description: body,
@@ -74,9 +78,8 @@ func (p *Player) SendNotice(title, body, footer string) *discordgo.Message {
 		Color: 0xff5500,
 	}
 
-	m, err := p.session.ChannelMessageSendEmbed(p.GuildState.TextChannel, e)
+	_, err := p.session.ChannelMessageSendEmbed(p.Conf.TextChannel, e)
 	if err != nil {
 		p.log.Err(err).Msg("unable to send embed")
 	}
-	return m
 }

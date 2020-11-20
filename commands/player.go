@@ -22,7 +22,7 @@ func (c *play) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 		return
 	}
 
-	if p.State.Playing && p.State.Paused {
+	if p.Playing() && p.Paused() {
 		p.Resume()
 		msg := fmt.Sprintf("⏯️ Resumed by <@%s>", m.Author.ID)
 		if err := message.SendReply(s, m, "", msg, ""); err != nil {
@@ -30,7 +30,7 @@ func (c *play) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 		}
 		return
 	}
-	if p.State.Playing {
+	if p.Playing() {
 		message.SendShortTimedNotice(s, m, "Already playing", c.log)
 		return
 	}
@@ -54,7 +54,7 @@ func (c *play) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 	}
 }
 
-func NewPlayCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewPlayCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "play"
 	return &play{
 		BaseCommand{
@@ -95,7 +95,7 @@ func (c *stop) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 		return
 	}
 
-	if !p.State.Playing {
+	if !p.Playing() {
 		if err := message.SendTimedReply(s, m, "", "Nothing to do", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
@@ -109,7 +109,7 @@ func (c *stop) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 	}
 }
 
-func NewStopCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewStopCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "stop"
 	return &stop{
 		BaseCommand{
@@ -143,7 +143,7 @@ func (c *pause) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 		return
 	}
 
-	if p.State.Paused {
+	if p.Paused() {
 		if err := message.SendTimedReply(s, m, "", "Already paused", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
@@ -156,7 +156,7 @@ func (c *pause) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 	}
 }
 
-func NewPauseCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewPauseCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "pause"
 	return &pause{
 		BaseCommand{
@@ -198,7 +198,7 @@ func (c *skip) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 	}
 }
 
-func NewSkipCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewSkipCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "skip"
 	return &skip{
 		BaseCommand{
@@ -231,7 +231,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 		return
 	}
 
-	if !p.State.Playing {
+	if !p.Playing() {
 		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {
 			c.log.Err(err).Msg("unable to send timed reply")
 		}
@@ -256,7 +256,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 	}
 }
 
-func NewNowPlayingCommand(p *player.Players, log *zerolog.Logger) Command {
+func NewNowPlayingCommand(p *player.Players, log zerolog.Logger) Command {
 	cmd := "nowplaying"
 	return &np{
 		BaseCommand{

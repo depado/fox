@@ -36,34 +36,47 @@ func NewACL(s *storage.StormDB) *ACL {
 // Check will perform checks for the given RoleRestriction and
 // ChannelRestriction.
 func (a ACL) Check(s *discordgo.Session, m *discordgo.Message, r RoleRestriction, c ChannelRestriction) (bool, error) {
-	var gs *guild.State
+	var gc *guild.Conf
 	var err error
+	var rc bool
 
 	// Fetch guild state
-	if gs, err = a.storage.GetGuildState(m.GuildID); err != nil {
+	if gc, err = a.storage.GetGuilConf(m.GuildID); err != nil {
 		return false, fmt.Errorf("get guild state: %w", err)
 	}
 
 	// Check for user restriction
 	switch r {
 	case Admin:
-		return a.IsAdmin(s, m)
+		if rc, err = a.IsAdmin(s, m); err != nil {
+			return false, err
+		}
 	case Privileged:
 		// If no privileged role is defined, automatically refuse unless admin
-		if gs.PrivilegedRole == "" {
-			return a.IsAdmin(s, m)
+		if gc.PrivilegedRole == "" {
+			if rc, err = a.IsAdmin(s, m); err != nil {
+				return false, err
+			}
 		} else {
-			return a.IsPrivileged(s, m, gs)
+			if rc, err = a.IsPrivileged(s, m, gc); err != nil {
+				return false, err
+			}
 		}
+	case Anyone:
+		rc = true
+	}
+
+	if !rc {
+		return false, nil
 	}
 
 	// Check for channel restriction
 	if c == Music {
 		// If no text channel defined, automatically approve
-		if gs.TextChannel == "" {
+		if gc.TextChannel == "" {
 			return true, nil
 		} else {
-			return m.ChannelID == gs.TextChannel, nil
+			return m.ChannelID == gc.TextChannel, nil
 		}
 	}
 
@@ -71,12 +84,12 @@ func (a ACL) Check(s *discordgo.Session, m *discordgo.Message, r RoleRestriction
 }
 
 // IsMusic will check if the provided message was sent to the music channel.
-func (a ACL) IsMusic(m *discordgo.Message, gs *guild.State) bool {
-	return m.ChannelID == gs.TextChannel
+func (a ACL) IsMusic(m *discordgo.Message, gc *guild.Conf) bool {
+	return m.ChannelID == gc.TextChannel
 }
 
 // IsPrivileged will check if a member is either admin or DJ.
-func (a ACL) IsPrivileged(s *discordgo.Session, m *discordgo.Message, gs *guild.State) (bool, error) {
+func (a ACL) IsPrivileged(s *discordgo.Session, m *discordgo.Message, gc *guild.Conf) (bool, error) {
 	adm, err := a.IsAdmin(s, m)
 	if err != nil {
 		return false, fmt.Errorf("check admin: %w", err)
@@ -85,8 +98,8 @@ func (a ACL) IsPrivileged(s *discordgo.Session, m *discordgo.Message, gs *guild.
 		return true, nil
 	}
 
-	if gs.PrivilegedRole != "" {
-		return a.HasRole(m.Member, gs.PrivilegedRole), nil
+	if gc.PrivilegedRole != "" {
+		return a.HasRole(m.Member, gc.PrivilegedRole), nil
 	}
 	return false, nil
 }

@@ -5,12 +5,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog"
+
 	"github.com/Depado/fox/acl"
 	"github.com/Depado/fox/message"
 	"github.com/Depado/fox/player"
 	"github.com/Depado/fox/soundcloud"
-	"github.com/bwmarrin/discordgo"
-	"github.com/rs/zerolog"
 )
 
 type add struct {
@@ -60,7 +61,7 @@ func (c *add) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 	}
 }
 
-func NewAddCommand(p *player.Players, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
+func NewAddCommand(p *player.Players, log zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
 	cmd := "add"
 	return &add{
 		sp: sp,
@@ -137,7 +138,7 @@ func (c *next) Handler(s *discordgo.Session, m *discordgo.Message, args []string
 	}
 }
 
-func NewNextCommand(p *player.Players, log *zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
+func NewNextCommand(p *player.Players, log zerolog.Logger, sp *soundcloud.SoundCloudProvider) Command {
 	cmd := "next"
 	return &next{
 		sp: sp,

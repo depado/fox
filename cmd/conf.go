@@ -35,7 +35,7 @@ type Conf struct {
 }
 
 // NewLogger will return a new logger
-func NewLogger(c *Conf) *zerolog.Logger {
+func NewLogger(c *Conf) zerolog.Logger {
 	// Level parsing
 	warns := []string{}
 	lvl, err := zerolog.ParseLevel(c.Log.Level)
@@ -66,7 +66,7 @@ func NewLogger(c *Conf) *zerolog.Logger {
 		log.Warn().Msg(w)
 	}
 
-	return &log.Logger
+	return log.Logger
 }
 
 // NewConf will parse and return the configuration

@@ -41,9 +41,9 @@ var versionCmd = &cobra.Command{
 
 func run() {
 	fx.New(
+		fx.NopLogger,
 		fx.Provide(
 			cmd.NewConf, cmd.NewLogger, acl.NewACL, player.NewPlayers, storage.NewStormStorage,
-			bot.NewDiscordSession,
 			soundcloud.NewAutoIDClient, sp.NewSoundCloudProvider,
 			commands.InitializeAllCommands,
 			bot.NewBot,
