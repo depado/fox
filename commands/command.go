@@ -42,6 +42,14 @@ type Command interface {
 type Options struct {
 	ArgsRequired      bool
 	DeleteUserMessage bool
+	DMCapability      bool
+}
+
+type SubCommand struct {
+	Long        string
+	Aliases     []string
+	Arg         string
+	Description string
 }
 
 type Example struct {
@@ -69,9 +77,10 @@ type BaseCommand struct {
 	Options Options
 
 	// Internal fields
-	Help    Help
-	Players *player.Players
-	log     zerolog.Logger
+	SubCommands []SubCommand
+	Help        Help
+	Players     *player.Players
+	log         zerolog.Logger
 }
 
 func (c BaseCommand) ACL() (acl.ChannelRestriction, acl.RoleRestriction) {
@@ -92,13 +101,26 @@ func (c BaseCommand) GetHelp() Help {
 
 func (c BaseCommand) DisplayHelp(s *discordgo.Session, m *discordgo.Message, prefix string) {
 	desc := c.Help.Description
+	if len(c.SubCommands) > 0 {
+		desc += "\n\n__**Subcommands**__"
+		for _, sc := range c.SubCommands {
+			desc += fmt.Sprintf("\n\n`%s", sc.Long)
+			for _, a := range sc.Aliases {
+				desc += fmt.Sprintf("/%s", a)
+			}
+			if sc.Arg != "" {
+				desc += fmt.Sprintf(" <%s>", sc.Arg)
+			}
+			desc += "`"
+			if sc.Description != "" {
+				desc += "\n" + sc.Description
+			}
+		}
+	}
+	desc += "\n\n__**Restrictions**__\n\n"
 	desc += fmt.Sprintf(
-		"\n\nChannel Restriction\n**%s**",
-		acl.ChannelRestrictionString(c.ChannelRestriction),
-	)
-	desc += fmt.Sprintf(
-		"\n\nRole Restriction\n**%s**",
-		acl.RoleRestrictionString(c.RoleRestriction),
+		"**%s\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0%s**",
+		acl.ChannelRestrictionString(c.ChannelRestriction), acl.RoleRestrictionString(c.RoleRestriction),
 	)
 
 	var aliases string
@@ -113,7 +135,7 @@ func (c BaseCommand) DisplayHelp(s *discordgo.Session, m *discordgo.Message, pre
 	}
 
 	if len(c.Help.Examples) > 0 {
-		desc += "\n\n**Examples:**"
+		desc += "\n\n__**Examples**__"
 		fields := []*discordgo.MessageEmbedField{}
 		for _, e := range c.Help.Examples {
 			fields = append(fields, &discordgo.MessageEmbedField{
@@ -124,7 +146,13 @@ func (c BaseCommand) DisplayHelp(s *discordgo.Session, m *discordgo.Message, pre
 	}
 	e.Description = desc
 
-	if _, err := s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
+	uc, err := s.UserChannelCreate(m.Author.ID)
+	if err != nil {
+		c.log.Err(err).Msg("unable to get channel to DM user")
+		return
+	}
+
+	if _, err := s.ChannelMessageSendEmbed(uc.ID, e); err != nil {
 		c.log.Err(err).Msg("unable to send embed")
 	}
 }

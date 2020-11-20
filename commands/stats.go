@@ -47,16 +47,21 @@ func (c *stats) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 		Embed: e,
 	}
 
-	g := p.Stats.GenerateChart()
-	if g != nil {
-		buffer := bytes.NewBuffer([]byte{})
-		if err := g.Render(chart.PNG, buffer); err != nil {
-			c.log.Err(err).Msg("unable to render")
-		} else {
-			msg.File = &discordgo.File{
-				Name:        "graph.png",
-				ContentType: "image/png",
-				Reader:      buffer,
+	if len(args) > 0 {
+		switch args[0] {
+		case "chart", "c", "graph", "g":
+			g := p.Stats.GenerateChart()
+			if g != nil {
+				buffer := bytes.NewBuffer([]byte{})
+				if err := g.Render(chart.PNG, buffer); err != nil {
+					c.log.Err(err).Msg("unable to render")
+				} else {
+					msg.File = &discordgo.File{
+						Name:        "graph.png",
+						ContentType: "image/png",
+						Reader:      buffer,
+					}
+				}
 			}
 		}
 	}
@@ -85,11 +90,25 @@ func NewStatsCommand(p *player.Players, log zerolog.Logger) Command {
 			},
 			Long:    cmd,
 			Aliases: []string{"s"},
+			SubCommands: []SubCommand{
+				{
+					Long:        "graph",
+					Aliases:     []string{"chart", "c", "g"},
+					Description: "Display an additional graph for kB/s",
+				},
+			},
 			Help: Help{
 				Usage:     cmd,
 				ShortDesc: "View encoding and streaming instant stats",
 				Description: "This command will display the encoding and " +
-					"streaming stats if a stream is ongoing.",
+					"streaming stats if a stream is ongoing. Using the graph " +
+					"subcommand will also display a graph of the bitrate over " +
+					"the whole encoding session.",
+				Examples: []Example{
+					{Command: "stats", Explanation: "Display instant stats"},
+					{Command: "stats graph", Explanation: "Display instant stats and graph"},
+					{Command: "stats g", Explanation: "Same in short notation"},
+				},
 			},
 			Players: p,
 			log:     log.With().Str("command", cmd).Logger(),

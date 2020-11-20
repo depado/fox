@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/guild"
 	"github.com/Depado/fox/message"
+	"github.com/Depado/fox/models"
 	"github.com/Depado/fox/player"
 	"github.com/Depado/fox/storage"
 	"github.com/bwmarrin/discordgo"
@@ -19,9 +19,9 @@ type setup struct {
 	Storage *storage.StormDB
 }
 
-func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gconf *guild.Conf, value string) {
+func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gconf *models.Conf, value string) {
 	if err := gconf.SetChannel(s, value, true); err != nil {
-		if errors.Is(err, guild.ChannelNotFoundError) {
+		if errors.Is(err, models.ChannelNotFoundError) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any vocal channel named like this", c.log)
 			return
 		}
@@ -31,9 +31,9 @@ func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, g
 	message.SendShortTimedNotice(s, m, "Alright, I'll stream the music to this channel from now on", c.log)
 }
 
-func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gconf *guild.Conf, value string) {
+func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gconf *models.Conf, value string) {
 	if err := gconf.SetChannel(s, value, false); err != nil {
-		if errors.Is(err, guild.ChannelNotFoundError) {
+		if errors.Is(err, models.ChannelNotFoundError) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any text channel named like this", c.log)
 			return
 		}
@@ -45,10 +45,10 @@ func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gc
 
 func (c *setup) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
 	var err error
-	var gconf *guild.Conf
+	var gconf *models.Conf
 
 	if gconf, err = c.Storage.GetGuilConf(m.GuildID); err != nil {
-		c.log.Err(err).Msg("unable to fetch guild state")
+		c.log.Err(err).Msg("unable to fetch guild conf")
 		return
 	}
 
@@ -91,6 +91,10 @@ func NewSetupCommand(p *player.Players, log zerolog.Logger, storage *storage.Sto
 			Options: Options{
 				ArgsRequired:      false,
 				DeleteUserMessage: true,
+			},
+			SubCommands: []SubCommand{
+				{Long: "voice", Arg: "voice channel name", Description: "Setup the voice channel"},
+				{Long: "text", Arg: "text channel name", Description: "Setup the text channel"},
 			},
 			Long: cmd,
 			Help: Help{

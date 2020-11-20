@@ -2,7 +2,6 @@ package bot
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Depado/fox/message"
 	"github.com/bwmarrin/discordgo"
@@ -12,10 +11,7 @@ import (
 func (b *Bot) DisplayCommandHelp(s *discordgo.Session, m *discordgo.MessageCreate, cmd string) {
 	c, ok := b.commands.Get(cmd)
 	if !ok {
-		err := message.SendTimedReply(s, m.Message, "", "Unknown command", "", 5*time.Second)
-		if err != nil {
-			b.log.Err(err).Msg("unable to send timed reply")
-		}
+		message.SendShortTimedNotice(s, m.Message, fmt.Sprintf("Unknown command %s", cmd), b.log)
 		return
 	}
 	c.DisplayHelp(s, m.Message, b.conf.Bot.Prefix)
@@ -25,10 +21,10 @@ func (b *Bot) DisplayCommandHelp(s *discordgo.Session, m *discordgo.MessageCreat
 // global help
 func (b *Bot) DisplayGlobalHelp(s *discordgo.Session, m *discordgo.MessageCreate) {
 	e := &discordgo.MessageEmbed{
-		Title: "Fox Help",
+		Title: "❓ Fox Help",
 		Description: fmt.Sprintf(
 			"Fox is a music bot. To interact with it, use `%s <command>` where "+
-				"`command` is one of the following commands. To get more details "+
+				"`command` is one of the following commands.\nTo get more details "+
 				"about a given command, you can also use `%s help <command>`",
 			b.conf.Bot.Prefix, b.conf.Bot.Prefix),
 		Color: 0xff5500,
@@ -45,7 +41,12 @@ func (b *Bot) DisplayGlobalHelp(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 	e.Fields = fields
 
-	if _, err := s.ChannelMessageSendEmbed(m.ChannelID, e); err != nil {
+	uc, err := s.UserChannelCreate(m.Author.ID)
+	if err != nil {
+		b.log.Err(err).Msg("unable to get create channel DM for user")
+		return
+	}
+	if _, err := s.ChannelMessageSendEmbed(uc.ID, e); err != nil {
 		b.log.Err(err).Msg("unable to send reply")
 	}
 }
