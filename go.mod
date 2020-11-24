@@ -27,7 +27,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/ugorji/go v1.2.0 // indirect
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
-	go.etcd.io/bbolt v1.3.5 // indirect
+	go.etcd.io/bbolt v1.3.5
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect

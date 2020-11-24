@@ -232,9 +232,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 	}
 
 	if !p.Playing() {
-		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {
-			c.log.Err(err).Msg("unable to send timed reply")
-		}
+		message.SendShortTimedNotice(s, m, "No track is currently playing", c.log)
 		return
 	}
 
