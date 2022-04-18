@@ -1,10 +1,10 @@
 # Build Step
-FROM golang:1.15.4-alpine3.12 AS builder
+FROM golang:1.18-alpine AS builder
 
 # Dependencies
-RUN apk update && apk add --no-cache upx
-COPY --from=mwader/static-ffmpeg:4.3.1-2 /ffmpeg /tmp/ffmpeg
-RUN upx /tmp/ffmpeg
+RUN apk update && apk add --no-cache upx make git
+COPY --from=mwader/static-ffmpeg:4.4.0 /ffmpeg /tmp/ffmpeg
+RUN upx --best --lzma /tmp/ffmpeg
 
 # Source
 WORKDIR $GOPATH/src/github.com/Depado/fox
@@ -14,11 +14,8 @@ RUN go mod verify
 COPY . .
 
 # Build
-ARG build
-ARG version
-RUN CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=${version} -X main.Build=${build}" -o /tmp/fox
-RUN upx /tmp/fox
-
+RUN make tmp
+RUN upx --best --lzma /tmp/fox
 
 # Final Step
 FROM gcr.io/distroless/static

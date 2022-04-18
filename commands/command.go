@@ -12,7 +12,7 @@ import (
 	"github.com/Depado/fox/storage"
 )
 
-func InitializeAllCommands(p *player.Players, l zerolog.Logger, sp *soundcloud.SoundCloudProvider, st *storage.StormDB) []Command {
+func InitializeAllCommands(p *player.Players, l zerolog.Logger, sp *soundcloud.SoundCloudProvider, bs *storage.BoltStorage) []Command {
 	return []Command{
 		NewPlayCommand(p, l),
 		NewPauseCommand(p, l),
@@ -26,7 +26,7 @@ func InitializeAllCommands(p *player.Players, l zerolog.Logger, sp *soundcloud.S
 		NewSkipCommand(p, l),
 		NewRemoveCommand(p, l),
 		NewStatsCommand(p, l),
-		NewSetupCommand(p, l, st),
+		NewSetupCommand(p, l, bs),
 	}
 }
 

@@ -24,10 +24,10 @@ const (
 )
 
 type ACL struct {
-	storage *storage.StormDB
+	storage *storage.BoltStorage
 }
 
-func NewACL(s *storage.StormDB) *ACL {
+func NewACL(s *storage.BoltStorage) *ACL {
 	return &ACL{
 		storage: s,
 	}
@@ -41,7 +41,7 @@ func (a ACL) Check(s *discordgo.Session, m *discordgo.Message, r RoleRestriction
 	var rc bool
 
 	// Fetch guild state
-	if gc, err = a.storage.GetGuilConf(m.GuildID); err != nil {
+	if gc, err = a.storage.GetGuildConf(m.GuildID); err != nil {
 		return false, fmt.Errorf("get guild state: %w", err)
 	}
 

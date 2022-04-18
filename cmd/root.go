@@ -16,6 +16,7 @@ func AddLoggerFlags(c *cobra.Command) {
 func AddBotFlags(c *cobra.Command) {
 	c.PersistentFlags().String("bot.prefix", "!fox", "prefix to call the bot")
 	c.PersistentFlags().String("bot.token", "", "private bot token")
+	c.PersistentFlags().Int("bot.max_guilds", 5, "maximum number of guilds this instance can handle")
 }
 
 func AddDatabaseFlags(c *cobra.Command) {

@@ -1,10 +1,12 @@
 package bot
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/asdine/storm/v3"
 	"github.com/bwmarrin/discordgo"
+
+	"github.com/Depado/fox/storage"
 )
 
 func (b *Bot) GetInvitingUser(s *discordgo.Session, g *discordgo.GuildCreate) string {
@@ -24,9 +26,9 @@ func (b *Bot) GetInvitingUser(s *discordgo.Session, g *discordgo.GuildCreate) st
 }
 
 func (b *Bot) GuildCreatedHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
-	gc, err := b.storage.GetGuilConf(g.ID)
-	if err != nil && err == storm.ErrNotFound {
-		if gc, err = b.storage.NewGuildState(g.ID); err != nil {
+	gc, err := b.storage.GetGuildConf(g.ID)
+	if err != nil && errors.Is(err, storage.ErrGuildNotFound) {
+		if gc, err = b.storage.NewGuild(g); err != nil {
 			b.log.Err(err).Msg("unable to instantiate new guild state")
 			return
 		}
@@ -34,6 +36,11 @@ func (b *Bot) GuildCreatedHandler(s *discordgo.Session, g *discordgo.GuildCreate
 	} else if err != nil {
 		b.log.Err(err).Msg("unable to fetch guild state")
 		return
+	} else {
+		if err = b.storage.UpdateGuildInfo(g); err != nil {
+			b.log.Err(err).Msg("unable to update guild info")
+			return
+		}
 	}
 
 	if err := b.players.Create(b.session, b.conf, b.log, g.ID, b.storage, gc); err != nil {
@@ -57,7 +64,7 @@ func (b *Bot) MessageInviter(s *discordgo.Session, g *discordgo.GuildCreate) {
 			"Hey <@%s>!\nThank you for inviting me in your server! But before I "+
 				"can play some music for you, you need to tell me **where** I "+
 				"can play music.\nIn order to do that, please use the\n"+
-				"`%s setup voice=\"<vocal name or ID>\"`\n command "+
+				"`%s setup voice \"<vocal name or ID>\"`\n command "+
 				"in one of your channels.\n\nDon't hesitate to use the `%s help` "+
 				"command to see how you can make me play music!"+
 				"", u, b.conf.Bot.Prefix, b.conf.Bot.Prefix,

@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -12,11 +13,17 @@ var (
 
 // Conf represents the guild conf at a given point.
 type Conf struct {
-	ID             string
+	ID             string `json:"-"`
 	VoiceChannel   string `json:"voice"`
 	TextChannel    string `json:"text"`
 	QueueHistory   int    `json:"history"`
 	PrivilegedRole string `json:"privileged_role"`
+}
+
+type Info struct {
+	Name     string    `json:"name"`
+	Members  int       `json:"members"`
+	JoinedAt time.Time `json:"joined_at"`
 }
 
 // New creates a new conf for a given guild ID
@@ -32,7 +39,7 @@ func (c *Conf) SetChannel(s *discordgo.Session, value string, voice bool) error 
 	var dtype discordgo.ChannelType
 
 	if c.ID == "" {
-		return fmt.Errorf("guild Conf with empty ID")
+		return fmt.Errorf("guild conf with empty ID")
 	}
 
 	chans, err := s.GuildChannels(c.ID)

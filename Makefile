@@ -3,10 +3,16 @@
 export GO111MODULE=on
 export CGO_ENABLED=0
 export VERSION=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo "0.1.0")
-export TAG=$VERSION
 export BUILD=$(shell git rev-parse HEAD 2> /dev/null || echo "undefined")
+export BUILDDATE=$(shell LANG=en_us_88591 date)
 BINARY=fox
-LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.Build=$(BUILD) -s -w"
+LDFLAGS=-ldflags "-X 'github.com/Depado/fox/cmd.Version=$(VERSION)' \
+		-X 'github.com/Depado/fox/cmd.Build=$(BUILD)' \
+		-X 'github.com/Depado/fox/cmd.Time=$(BUILDDATE)' -s -w"
+PACKEDFLAGS=-ldflags "-X 'github.com/Depado/fox/cmd.Version=$(VERSION)' \
+		-X 'github.com/Depado/fox/cmd.Build=$(BUILD)' \
+		-X 'github.com/Depado/fox/cmd.Time=$(BUILDDATE)' \
+		-X 'github.com/Depado/fox/cmd.Packer=upx --best --lzma' -s -w"
 
 .PHONY: help
 help:
@@ -14,23 +20,24 @@ help:
 
 .PHONY: build
 build: ## Build
-	go build $(LDFLAGS) -o $(BINARY) 
+	go build $(LDFLAGS) -o $(BINARY)
 
-.PHONY: compressed
-compressed: fullbuild
-	upx --brute $(BINARY)
+.PHONY: tmp
+tmp: ## Build and output the binary in /tmp
+	go build $(LDFLAGS) -o /tmp/$(BINARY)
+
+.PHONY: packed
+packed: ## Build a packed version of the binary
+	go build $(PACKEDFLAGS) -o $(BINARY)
+	upx --best --lzma $(BINARY)
 
 .PHONY: docker-nopack
 docker-nopack: ## Build the docker image without packing binaries
-	docker build -t $(BINARY)-nopack:latest -t $(BINARY)-nopack:$(BUILD) \
-		--build-arg build=$(BUILD) --build-arg version=$(VERSION) \
-		-f Dockerfile.nopack .
+	docker build -t $(BINARY)-nopack:latest -t $(BINARY)-nopack:$(BUILD) -f Dockerfile.nopack .
 
 .PHONY: docker
 docker: ## Build the docker image with packed binaries
-	docker build -t $(BINARY):latest -t $(BINARY):$(BUILD) \
-		--build-arg build=$(BUILD) --build-arg version=$(VERSION) \
-		-f Dockerfile .
+	docker build -t $(BINARY):latest -t $(BINARY):$(BUILD) -f Dockerfile .
 
 .PHONY: lint
 lint: ## Runs the linter

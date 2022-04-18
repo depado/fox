@@ -20,3 +20,4 @@ dockervol/
 *.db
 *.json
 dist/
+coverage.txt

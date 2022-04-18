@@ -25,7 +25,7 @@ type Bot struct {
 	commands    *CommandMap
 	conf        *cmd.Conf
 	players     *player.Players
-	storage     *storage.StormDB
+	storage     *storage.BoltStorage
 	acl         *acl.ACL
 }
 
@@ -42,7 +42,7 @@ func (cm *CommandMap) Get(c string) (commands.Command, bool) {
 	return co, ok
 }
 
-func NewBot(lc fx.Lifecycle, l zerolog.Logger, c *cmd.Conf, cmds []commands.Command, p *player.Players, storage *storage.StormDB, a *acl.ACL) *Bot {
+func NewBot(lc fx.Lifecycle, l zerolog.Logger, c *cmd.Conf, cmds []commands.Command, p *player.Players, storage *storage.BoltStorage, a *acl.ACL) *Bot {
 	log := l.With().Str("component", "bot").Logger()
 	dg, err := discordgo.New("Bot " + c.Bot.Token)
 	if err != nil {

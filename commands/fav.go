@@ -12,7 +12,7 @@ import (
 
 type fav struct {
 	BaseCommand
-	Storage *storage.StormDB
+	Storage *storage.BoltStorage
 }
 
 func (c *fav) Handler(s *discordgo.Session, m *discordgo.Message, args []string) {
@@ -41,7 +41,7 @@ func (c *fav) Handler(s *discordgo.Session, m *discordgo.Message, args []string)
 	}
 }
 
-func NewFavCommand(p *player.Players, log zerolog.Logger, storage *storage.StormDB) Command {
+func NewFavCommand(p *player.Players, log zerolog.Logger, storage *storage.BoltStorage) Command {
 	cmd := "fav"
 	return &fav{
 		BaseCommand: BaseCommand{

@@ -32,7 +32,7 @@ func (p *Players) GetPlayer(guildID string) *Player {
 }
 
 // Create will create a new player and associate it with the guild
-func (p *Players) Create(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guild string, storage *storage.StormDB, gc *models.Conf) error {
+func (p *Players) Create(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guild string, storage *storage.BoltStorage, gc *models.Conf) error {
 	p.Lock()
 	defer p.Unlock()
 
@@ -74,7 +74,7 @@ type Player struct {
 	state   *State
 	Guild   string
 	Conf    *models.Conf
-	Storage *storage.StormDB
+	Storage *storage.BoltStorage
 
 	log     zerolog.Logger
 	conf    *cmd.Conf
@@ -89,7 +89,7 @@ type Player struct {
 
 // NewPlayer will create a new player from scratch using the provided
 // arguments
-func NewPlayer(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guildID string, storage *storage.StormDB, gc *models.Conf) (*Player, error) {
+func NewPlayer(s *discordgo.Session, conf *cmd.Conf, log zerolog.Logger, guildID string, storage *storage.BoltStorage, gc *models.Conf) (*Player, error) {
 	st := NewState()
 	p := &Player{
 		state:   st,

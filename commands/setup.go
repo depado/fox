@@ -16,7 +16,7 @@ import (
 
 type setup struct {
 	BaseCommand
-	Storage *storage.StormDB
+	Storage *storage.BoltStorage
 }
 
 func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gconf *models.Conf, value string) {
@@ -47,23 +47,18 @@ func (c *setup) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 	var err error
 	var gconf *models.Conf
 
-	if gconf, err = c.Storage.GetGuilConf(m.GuildID); err != nil {
+	if gconf, err = c.Storage.GetGuildConf(m.GuildID); err != nil {
 		c.log.Err(err).Msg("unable to fetch guild conf")
 		return
 	}
 
-	if len(args) < 1 {
+	if len(args) < 2 {
+		message.SendShortTimedNotice(s, m, "This command requires two arguments", c.log)
 		return
 	}
 
-	setup := strings.Split(args[0], "=")
-	if len(setup) != 2 {
-		c.log.Error().Str("arg", args[0]).Msg("unable to parse param")
-		return
-	}
-	param, value := setup[0], strings.Trim(setup[1], `"`)
-	c.log.Debug().Str("param", param).Str("value", value).Msg("got that")
-
+	v := strings.Join(args[1:], " ")
+	param, value := args[0], strings.Trim(v, `"`)
 	switch param {
 	case "voice":
 		c.handleVoiceChannel(s, m, gconf, value)
@@ -77,12 +72,12 @@ func (c *setup) Handler(s *discordgo.Session, m *discordgo.Message, args []strin
 		return
 	}
 
-	if err := c.Storage.SaveGuildState(gconf); err != nil {
+	if err := c.Storage.SaveGuildConf(gconf); err != nil {
 		c.log.Err(err).Msg("unable to save guild state")
 	}
 }
 
-func NewSetupCommand(p *player.Players, log zerolog.Logger, storage *storage.StormDB) Command {
+func NewSetupCommand(p *player.Players, log zerolog.Logger, storage *storage.BoltStorage) Command {
 	cmd := "setup"
 	return &setup{
 		BaseCommand: BaseCommand{
@@ -102,9 +97,9 @@ func NewSetupCommand(p *player.Players, log zerolog.Logger, storage *storage.Sto
 				ShortDesc:   "Setup the bot",
 				Description: "This commands allows to setup the various bits of the bot.",
 				Examples: []Example{
-					{Command: `setup voice="My Vocal Channel"`, Explanation: "Setup the vocal channel of the bot"},
-					{Command: `setup text="fox-radio"`, Explanation: "Setup the text channel of the bot"},
-					{Command: `setup djrole="DJ"`, Explanation: "Setup the privileged DJ role"},
+					{Command: `setup voice "My Vocal Channel"`, Explanation: "Setup the vocal channel of the bot"},
+					{Command: `setup text fox-radio`, Explanation: "Setup the text channel of the bot"},
+					{Command: `setup djrole DJ`, Explanation: "Setup the privileged DJ role"},
 				},
 			},
 			Players: p,
