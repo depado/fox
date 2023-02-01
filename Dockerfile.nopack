@@ -3,7 +3,7 @@ FROM golang:1.18-alpine AS builder
 
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
-COPY --from=mwader/static-ffmpeg:4.4.0 /ffmpeg /tmp/ffmpeg
+COPY --from=mwader/static-ffmpeg:4.4.1 /ffmpeg /tmp/ffmpeg
 
 # Source
 WORKDIR $GOPATH/src/github.com/Depado/scarecrow
