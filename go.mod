@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Depado/soundcloud v0.1.1
 	github.com/bwmarrin/discordgo v0.26.1
-	github.com/gin-gonic/gin v1.8.1
+	github.com/gin-gonic/gin v1.8.2
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/jonas747/dca v0.0.0-20210930103944-155f5e5f0cc7
 	github.com/rs/zerolog v1.28.0
@@ -52,7 +52,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/image v0.2.0 // indirect
-	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
