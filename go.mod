@@ -11,7 +11,7 @@ require (
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	github.com/wcharczuk/go-chart v2.0.1+incompatible
+	github.com/wcharczuk/go-chart v2.1.0+incompatible
 	go.etcd.io/bbolt v1.3.7
 	go.uber.org/fx v1.19.1
 )
