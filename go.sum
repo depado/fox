@@ -163,6 +163,7 @@ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/jarcoal/httpmock v1.2.0 h1:gSvTxxFR/MEMfsGrvRbdfpRUMBStovlSRLw0Ep1bwwc=
 github.com/jonas747/dca v0.0.0-20210930103944-155f5e5f0cc7 h1:Iw1pZVDiq4tY8hO7Wt1D1EqDC0BmMw/bFO/Rdt4gs9Q=
 github.com/jonas747/dca v0.0.0-20210930103944-155f5e5f0cc7/go.mod h1:rxjYX9OJU81unMxQDHChU/lAiOhlY9MV+faPX/NmwLk=
+github.com/jonas747/dca/v2 v2.0.0/go.mod h1:WDY2/zvnIu1JbKQUG4SJW9FcVRWYRKlGe+fz0ZR96BM=
 github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757 h1:Kyv+zTfWIGRNaz/4+lS+CxvuKVZSKFz/6G8E3BKKBRs=
 github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757/go.mod h1:cZnNmdLiLpihzgIVqiaQppi9Ts3D4qF/M45//yW35nI=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
