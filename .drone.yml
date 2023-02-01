@@ -85,12 +85,6 @@ steps:
       format: markdown
       token:
         from_secret: telegram_token
-      message: >
-        *{{repo.owner}}/{{repo.name}}*
-
-        [Build {{build.number}}]({{build.link}}) by {{commit.author}} {{#success build.status}}succeeded{{else}}failed{{/success}} in {{since build.started}}
-
-        `{{truncate commit.sha 8}}`: "{{commit.message}}"
     when:
       status:
       - success
