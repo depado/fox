@@ -10,7 +10,7 @@ import (
 	"github.com/Depado/fox/player"
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
-	"github.com/wcharczuk/go-chart"
+	"github.com/wcharczuk/go-chart/v2"
 )
 
 type stats struct {

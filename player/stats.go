@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wcharczuk/go-chart"
+	"github.com/wcharczuk/go-chart/v2"
 )
 
 type Stats struct {
@@ -21,7 +21,6 @@ type Stats struct {
 }
 
 var whiteStyle = chart.Style{
-	Show:        true,
 	StrokeColor: chart.ColorWhite,
 	FontColor:   chart.ColorWhite,
 }
@@ -56,16 +55,14 @@ func (s *Stats) GenerateChart() *chart.Chart {
 
 	cSeries := chart.ContinuousSeries{
 		Style: chart.Style{
-			Show:      true,
 			FillColor: chart.GetDefaultColor(0).WithAlpha(50),
 		},
 		XValues: s.TimeAxis,
 		YValues: s.BiteRateAxis,
 	}
 
-	annotation := chart.LastValueAnnotation(cSeries)
+	annotation := chart.LastValueAnnotationSeries(cSeries)
 	annotation.Style = chart.Style{
-		Show:        true,
 		FontColor:   chart.ColorWhite,
 		FillColor:   chart.GetDefaultColor(0).WithAlpha(50),
 		StrokeColor: chart.GetDefaultColor(0),
@@ -75,7 +72,6 @@ func (s *Stats) GenerateChart() *chart.Chart {
 		Title:      "Encoding Stats",
 		TitleStyle: whiteStyle,
 		Background: chart.Style{
-			Show:      true,
 			FillColor: chart.ColorTransparent,
 		},
 		XAxis: chart.XAxis{
@@ -97,7 +93,6 @@ func (s *Stats) GenerateChart() *chart.Chart {
 			},
 		},
 		Canvas: chart.Style{
-			Show:      true,
 			FillColor: chart.ColorTransparent,
 		},
 		Series: []chart.Series{
