@@ -1,6 +1,6 @@
 module github.com/Depado/fox
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Depado/soundcloud v0.2.1
