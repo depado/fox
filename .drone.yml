@@ -10,7 +10,7 @@ steps:
       - git fetch --tags
 
   - name: build
-    image: golang:latest
+    image: golang:1.19.5
     volumes:
       - name: deps
         path: /go
@@ -18,7 +18,7 @@ steps:
       - make
 
   - name: linter
-    image: golang:latest
+    image: golang:1.19.5
     volumes:
       - name: deps
         path: /go
@@ -64,7 +64,7 @@ steps:
       event: [tag]
 
   - name: release
-    image: golang
+    image: golang:1.19.5
     environment:
       TAG: "${DRONE_TAG}"
       BUILD: "${DRONE_COMMIT_SHA}"
