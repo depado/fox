@@ -30,6 +30,7 @@ steps:
   - name: docker latest
     image: plugins/docker
     settings:
+      dockerfile: Dockerfile.nopack
       username: depado
       password:
         from_secret: ghcr_pat
@@ -48,6 +49,7 @@ steps:
   - name: docker tag
     image: plugins/docker
     settings:
+      dockerfile: Dockerfile.nopack
       username: depado
       password:
         from_secret: ghcr_pat
