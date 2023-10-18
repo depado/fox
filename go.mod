@@ -13,7 +13,7 @@ require (
 	github.com/spf13/viper v1.17.0
 	github.com/wcharczuk/go-chart/v2 v2.1.1
 	go.etcd.io/bbolt v1.3.7
-	go.uber.org/fx v1.20.0
+	go.uber.org/fx v1.20.1
 )
 
 require (
