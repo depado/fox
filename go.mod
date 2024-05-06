@@ -1,6 +1,8 @@
 module github.com/Depado/fox
 
-go 1.20
+go 1.21
+
+toolchain go1.22.2
 
 require (
 	github.com/Depado/soundcloud v0.2.1
@@ -12,7 +14,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/wcharczuk/go-chart/v2 v2.1.1
-	go.etcd.io/bbolt v1.3.9
+	go.etcd.io/bbolt v1.3.10
 	go.uber.org/fx v1.21.1
 )
 
