@@ -3,7 +3,7 @@ FROM golang:1.22-alpine AS builder
 
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
-COPY --from=mwader/static-ffmpeg:7.0.1 /ffmpeg /tmp/ffmpeg
+COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /tmp/ffmpeg
 RUN upx --best --lzma /tmp/ffmpeg
 
 # Source
