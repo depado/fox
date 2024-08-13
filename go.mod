@@ -2,7 +2,7 @@ module github.com/Depado/fox
 
 go 1.21
 
-toolchain go1.22.6
+toolchain go1.23.0
 
 require (
 	github.com/Depado/soundcloud v0.2.1
