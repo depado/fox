@@ -19,5 +19,6 @@ dockervol/
 *.priv
 *.db
 *.json
+!.github/renovate.json
 dist/
 coverage.txt
