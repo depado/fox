@@ -4,10 +4,9 @@ FROM golang:1.22-alpine AS builder
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
 COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /tmp/ffmpeg
-RUN upx --best --lzma /tmp/ffmpeg
 
 # Source
-WORKDIR $GOPATH/src/github.com/Depado/fox
+WORKDIR $GOPATH/src/github.com/Depado/scarecrow
 COPY go.mod go.sum ./
 RUN go mod download
 RUN go mod verify
@@ -15,7 +14,6 @@ COPY . .
 
 # Build
 RUN make tmp
-RUN upx --best --lzma /tmp/fox
 
 # Final Step
 FROM gcr.io/distroless/static
