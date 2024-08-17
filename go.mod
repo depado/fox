@@ -1,4 +1,4 @@
-module github.com/Depado/fox
+module github.com/depado/fox
 
 go 1.23
 

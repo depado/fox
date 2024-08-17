@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/hako/durafmt"
 
-	"github.com/Depado/fox/tracks"
+	"github.com/depado/fox/tracks"
 )
 
 type Queue struct {

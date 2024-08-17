@@ -15,9 +15,9 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w
-      - -X 'github.com/Depado/fox/cmd.Version={{ .Version }}'
-      - -X 'github.com/Depado/fox/cmd.Build={{ .Commit }}'
-      - -X 'github.com/Depado/fox/cmd.Time={{ .Date }}'
+      - -X 'github.com/depado/fox/cmd.Version={{ .Version }}'
+      - -X 'github.com/depado/fox/cmd.Build={{ .Commit }}'
+      - -X 'github.com/depado/fox/cmd.Time={{ .Date }}'
 
 archives:
   - format: tar.gz

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/message"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/message"
 	"github.com/bwmarrin/discordgo"
 )
 

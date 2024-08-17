@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Depado/fox/tracks"
+	"github.com/depado/fox/tracks"
 	"github.com/Depado/soundcloud"
 	"github.com/bwmarrin/discordgo"
 	"github.com/hako/durafmt"

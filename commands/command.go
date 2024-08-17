@@ -6,10 +6,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/player"
-	"github.com/Depado/fox/soundcloud"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/player"
+	"github.com/depado/fox/soundcloud"
+	"github.com/depado/fox/storage"
 )
 
 func InitializeAllCommands(p *player.Players, l zerolog.Logger, sp *soundcloud.SoundCloudProvider, bs *storage.BoltStorage) []Command {

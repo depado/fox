@@ -6,13 +6,13 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/bot"
-	"github.com/Depado/fox/cmd"
-	"github.com/Depado/fox/commands"
-	"github.com/Depado/fox/player"
-	sp "github.com/Depado/fox/soundcloud"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/bot"
+	"github.com/depado/fox/cmd"
+	"github.com/depado/fox/commands"
+	"github.com/depado/fox/player"
+	sp "github.com/depado/fox/soundcloud"
+	"github.com/depado/fox/storage"
 )
 
 // Main command that will be run when no other command is provided on the

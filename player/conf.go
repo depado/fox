@@ -1,6 +1,6 @@
 package player
 
-import "github.com/Depado/fox/models"
+import "github.com/depado/fox/models"
 
 func (p *Player) UpdateConf(gc *models.Conf) {
 	log := p.log.With().Str("action", "conf_update").Logger()

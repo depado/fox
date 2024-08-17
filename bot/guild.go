@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/storage"
 )
 
 func (b *Bot) GetInvitingUser(s *discordgo.Session, g *discordgo.GuildCreate) string {

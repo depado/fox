@@ -9,7 +9,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"go.uber.org/fx"
 
-	"github.com/Depado/fox/cmd"
+	"github.com/depado/fox/cmd"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Depado/fox/models"
+	"github.com/depado/fox/models"
 	"github.com/bwmarrin/discordgo"
 
 	bolt "go.etcd.io/bbolt"

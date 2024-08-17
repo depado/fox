@@ -3,8 +3,8 @@ package acl
 import (
 	"fmt"
 
-	"github.com/Depado/fox/models"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/models"
+	"github.com/depado/fox/storage"
 	"github.com/bwmarrin/discordgo"
 )
 

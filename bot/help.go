@@ -3,7 +3,7 @@ package bot
 import (
 	"fmt"
 
-	"github.com/Depado/fox/message"
+	"github.com/depado/fox/message"
 	"github.com/bwmarrin/discordgo"
 )
 

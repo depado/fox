@@ -8,9 +8,9 @@ import (
 	"github.com/jonas747/dca"
 	"github.com/rs/zerolog"
 
-	"github.com/Depado/fox/cmd"
-	"github.com/Depado/fox/models"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/cmd"
+	"github.com/depado/fox/models"
+	"github.com/depado/fox/storage"
 )
 
 // Players will hold the guild players

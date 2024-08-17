@@ -8,10 +8,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/message"
-	"github.com/Depado/fox/player"
-	"github.com/Depado/fox/soundcloud"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/message"
+	"github.com/depado/fox/player"
+	"github.com/depado/fox/soundcloud"
 )
 
 type add struct {

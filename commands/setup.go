@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/message"
-	"github.com/Depado/fox/models"
-	"github.com/Depado/fox/player"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/message"
+	"github.com/depado/fox/models"
+	"github.com/depado/fox/player"
+	"github.com/depado/fox/storage"
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 )

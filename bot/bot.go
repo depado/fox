@@ -11,11 +11,11 @@ import (
 	"github.com/rs/zerolog"
 	"go.uber.org/fx"
 
-	"github.com/Depado/fox/acl"
-	"github.com/Depado/fox/cmd"
-	"github.com/Depado/fox/commands"
-	"github.com/Depado/fox/player"
-	"github.com/Depado/fox/storage"
+	"github.com/depado/fox/acl"
+	"github.com/depado/fox/cmd"
+	"github.com/depado/fox/commands"
+	"github.com/depado/fox/player"
+	"github.com/depado/fox/storage"
 )
 
 type Bot struct {

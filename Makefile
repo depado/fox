@@ -6,13 +6,13 @@ export VERSION=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo "0.1.
 export BUILD=$(shell git rev-parse HEAD 2> /dev/null || echo "undefined")
 export BUILDDATE=$(shell LANG=en_us_88591 date)
 BINARY=fox
-LDFLAGS=-ldflags "-X 'github.com/Depado/fox/cmd.Version=$(VERSION)' \
-		-X 'github.com/Depado/fox/cmd.Build=$(BUILD)' \
-		-X 'github.com/Depado/fox/cmd.Time=$(BUILDDATE)' -s -w"
-PACKEDFLAGS=-ldflags "-X 'github.com/Depado/fox/cmd.Version=$(VERSION)' \
-		-X 'github.com/Depado/fox/cmd.Build=$(BUILD)' \
-		-X 'github.com/Depado/fox/cmd.Time=$(BUILDDATE)' \
-		-X 'github.com/Depado/fox/cmd.Packer=upx --best --lzma' -s -w"
+LDFLAGS=-ldflags "-X 'github.com/depado/fox/cmd.Version=$(VERSION)' \
+		-X 'github.com/depado/fox/cmd.Build=$(BUILD)' \
+		-X 'github.com/depado/fox/cmd.Time=$(BUILDDATE)' -s -w"
+PACKEDFLAGS=-ldflags "-X 'github.com/depado/fox/cmd.Version=$(VERSION)' \
+		-X 'github.com/depado/fox/cmd.Build=$(BUILD)' \
+		-X 'github.com/depado/fox/cmd.Time=$(BUILDDATE)' \
+		-X 'github.com/depado/fox/cmd.Packer=upx --best --lzma' -s -w"
 
 .PHONY: help
 help:
