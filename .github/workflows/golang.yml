@@ -1,9 +1,9 @@
 name: golang
 
 on:
-  pull_request:
   push:
     branches: ["main"]
+  pull_request:
 
 jobs:
   build:
@@ -29,3 +29,20 @@ jobs:
         with:
           coverage-threshold: 80
           cover-pkg: ./...
+
+  golangci:
+    needs: build
+    name: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=3m
