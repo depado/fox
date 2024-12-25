@@ -1,9 +1,9 @@
 name: golang
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -12,13 +12,11 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5
         with:
-          go-version: stable
+          go-version-file: "go.mod"
       - name: build
         run: make build
-      - name: test
-        run: go test -race
 
-  coverage:
+  test:
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -27,16 +25,18 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with: { fetch-depth: 10 }
+        with:
+          fetch-depth: 10
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5
+        with:
+          go-version-file: "go.mod"
       - uses: gwatts/go-coverage-action@2845595538a59d63d1bf55f109c14e104c6f7cb3 # v2
-        id: coverage
         with:
           fail-coverage: never
           cover-pkg: ./...
 
   golangci:
     needs: build
-    name: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5
         with:
-          go-version: stable
+          go-version-file: "go.mod"
       - name: golangci-lint
         uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6
         with:
