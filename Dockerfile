@@ -1,9 +1,9 @@
 # Build Step
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23-alpine@sha256:6c5c9590f169f77c8046e45c611d3b28fe477789acd8d3762d23d4744de69812 AS builder
 
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
-COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /tmp/ffmpeg
+COPY --from=mwader/static-ffmpeg:7.0.2@sha256:d9b22f65c2049d73bf8ae556bb4c5c7d45e9fb85939d87951ed98f22b0f19105 /ffmpeg /tmp/ffmpeg
 
 # Source
 WORKDIR $GOPATH/src/github.com/depado/fox
@@ -16,7 +16,7 @@ COPY . .
 RUN make tmp
 
 # Final Step
-FROM gcr.io/distroless/static
+FROM gcr.io/distroless/static@sha256:5c7e2b465ac6a2a4e5f4f7f722ce43b147dabe87cb21ac6c4007ae5178a1fa58
 COPY --from=builder /tmp/fox /go/bin/fox
 COPY --from=builder /tmp/ffmpeg /usr/bin/ffmpeg
 
