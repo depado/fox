@@ -9,7 +9,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/jonas747/dca v0.0.0-20210930103944-155f5e5f0cc7
 	github.com/rs/zerolog v1.33.0
-	github.com/spf13/cobra v1.9.0
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/wcharczuk/go-chart/v2 v2.1.2
 	go.etcd.io/bbolt v1.4.0
