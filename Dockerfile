@@ -3,7 +3,7 @@ FROM golang:1.24.0-alpine@sha256:2d40d4fc278dad38be0777d5e2a88a2c6dee51b0b29c97a
 
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
-COPY --from=mwader/static-ffmpeg:7.0.2@sha256:d9b22f65c2049d73bf8ae556bb4c5c7d45e9fb85939d87951ed98f22b0f19105 /ffmpeg /tmp/ffmpeg
+COPY --from=mwader/static-ffmpeg:7.1.1@sha256:11a44711684c0b9f754c047dcd64235b8b52deab251bd0e0a86f22faa160749c /ffmpeg /tmp/ffmpeg
 
 # Source
 WORKDIR $GOPATH/src/github.com/depado/fox
