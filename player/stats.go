@@ -26,8 +26,8 @@ var whiteStyle = chart.Style{
 }
 
 func MinMax(array []float64) (float64, float64) {
-	var max float64 = array[0]
-	var min float64 = array[0]
+	var max = array[0]
+	var min = array[0]
 	for _, value := range array {
 		if max < value {
 			max = value

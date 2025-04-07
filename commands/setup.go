@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/depado/fox/acl"
 	"github.com/depado/fox/message"
 	"github.com/depado/fox/models"
 	"github.com/depado/fox/player"
 	"github.com/depado/fox/storage"
-	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 )
 
@@ -21,7 +21,7 @@ type setup struct {
 
 func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, gconf *models.Conf, value string) {
 	if err := gconf.SetChannel(s, value, true); err != nil {
-		if errors.Is(err, models.ChannelNotFoundError) {
+		if errors.Is(err, models.ErrChannelNotFound) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any vocal channel named like this", c.log)
 			return
 		}
@@ -33,7 +33,7 @@ func (c *setup) handleVoiceChannel(s *discordgo.Session, m *discordgo.Message, g
 
 func (c *setup) handleTextChannel(s *discordgo.Session, m *discordgo.Message, gconf *models.Conf, value string) {
 	if err := gconf.SetChannel(s, value, false); err != nil {
-		if errors.Is(err, models.ChannelNotFoundError) {
+		if errors.Is(err, models.ErrChannelNotFound) {
 			message.SendShortTimedNotice(s, m, "I couldn't find any text channel named like this", c.log)
 			return
 		}

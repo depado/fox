@@ -77,7 +77,7 @@ func NewBot(lc fx.Lifecycle, l zerolog.Logger, c *cmd.Conf, cmds []commands.Comm
 		OnStop: func(c context.Context) error {
 			b.log.Debug().Str("lifecycle", "stop").Msg("killing players")
 			b.players.Kill()
-			b.session.Close()
+			b.session.Close() //nolint:errcheck
 			return nil
 		},
 	})

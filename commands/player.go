@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/depado/fox/acl"
 	"github.com/depado/fox/message"
 	"github.com/depado/fox/player"
-	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 )
 
@@ -236,11 +236,7 @@ func (c *np) Handler(s *discordgo.Session, m *discordgo.Message, args []string) 
 		return
 	}
 
-	short := true
-	if len(args) > 0 && (args[0] == "full" || args[0] == "f") {
-		short = false
-	}
-
+	short := len(args) == 0 || (args[0] != "full" && args[0] != "f")
 	e := p.GenerateNowPlayingEmbed(short)
 	if e == nil {
 		if err := message.SendTimedReply(s, m, "", "No track is currently playing", "", 5*time.Second); err != nil {

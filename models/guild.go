@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ChannelNotFoundError = fmt.Errorf("no channel found")
+	ErrChannelNotFound = fmt.Errorf("no channel found")
 )
 
 // Conf represents the guild conf at a given point.
@@ -65,7 +65,7 @@ func (c *Conf) SetChannel(s *discordgo.Session, value string, voice bool) error 
 	}
 
 	if !found {
-		return ChannelNotFoundError
+		return ErrChannelNotFound
 	}
 
 	return nil
