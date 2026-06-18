@@ -3,7 +3,7 @@ FROM golang:1.26.4-alpine@sha256:f1ddd9fe14fffc091dd98cb4bfa999f32c5fc77d2f2305e
 
 # Dependencies
 RUN apk update && apk add --no-cache upx make git
-COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffmpeg /tmp/ffmpeg
+COPY --from=mwader/static-ffmpeg:8.1.2@sha256:33f770f812cbfc3de96c547157fc9faf8bd95a36481753439ffa761045167585 /ffmpeg /tmp/ffmpeg
 RUN upx --best --lzma /tmp/ffmpeg
 
 # Source
